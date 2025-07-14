@@ -138,8 +138,10 @@ Unfortunately the script needs to be edited directly. I'm not proficient in pyth
 but editing it is rather easy.
 
 Note there is a sample edited version of the script
-in this folder that can be used (mutt\_oauth2\_mf.py), but it does have the encryption/decryption disabled,
+included here below that can be used (mutt\_oauth2\_mf.py), but it does have the encryption/decryption disabled,
 so I recommend editing it yourself.
+
+https://github.com/zoot101/luadns-ddns/blob/main/docs/examples/mutt_oauth2_mf.py
 
 Find the lines near the top that start with ENCRYPTION\_PIPE and DECRYPTION\_PIPE, and
 change them to look like this. They are near the top of the script just where the comments end.
@@ -294,6 +296,12 @@ so that the clientID and clientSecret look like this as per the above link.
 clientId: "406964657835-aq8lmia8j95dhl1a2bvharmfk3t1hgqj.apps.googleusercontent.com",
 clientSecret: "kSmqreRr0qwBWJgbf5Y-PjSU",
 ```
+
+As before, note there is a sample edited version of the script
+included here below that can be used (mutt\_oauth2\_mf.py), but it does have the encryption/decryption disabled,
+so I recommend editing it yourself instead.
+
+https://github.com/zoot101/luadns-ddns/blob/main/docs/examples/mutt_oauth2_mf.py
 
 ## Step 2 - Generate the Token
 
