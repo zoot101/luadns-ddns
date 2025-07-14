@@ -457,21 +457,26 @@ export email_address="mail@example.comf"
 ## Custom Notification Hook - ntfy
 
 An example custom notification hook that can be used to send notifications
-to ntfy ( ) is included here:
+to **ntfy** is included here:
 
 https://github.com/zoot101/luadns-ddns/blob/main/docs/examples/ntfy-hook.sh
 
-To use it put the following in the config file (**/etc/luadns-ddns.conf**):
+To use it, do the following:
 
 ```bash
 sudo mkdir /opt/luadns-ddns-hooks
 cd /opt/luadns-ddns-hooks
 sudo wget https://raw.githubusercontent.com/zoot101/luadns-ddns/refs/heads/main/docs/examples/ntfy-hook.sh
+```
 
-# Then put the following in the config file (/etc/luadns-ddns.conf)
+Then put the following in the config file (/etc/luadns-ddns.conf)
+
+```bash
 export ntfy_url="https://ntfy.sh/channel_name"
 notification_hook="/opt/luadns-ddns-hooks/ntfy-hook.sh"
 ```
+
+See ntfy documentation here: https://docs.ntfy.sh
 
 # Step 4 - Call the Script Directly
 
