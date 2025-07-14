@@ -124,7 +124,7 @@ Alternatively to install manually, do the following:
 
 ```bash
 sudo apt install git # (On Debian based distros)
-sudo dnf install git # (On Fedora)
+sudo dnf install git-core # (On Fedora)
 
 # Clone the Repo
 git clone https://github.com/zoot101/luadns-ddns
@@ -159,11 +159,14 @@ If on Debian, one can do the below. If you get an error about wtmpdb not
 being available, install util-linux instead.
 
 ```bash
-# For Bookworm/Bullseye
+# For Debian Bookworm/Bullseye
 sudo apt install bind9-dnsutils bash coreutils gawk mutt curl jq util-linux
 
-# For Trixie
+# For Debian Trixie
 sudo apt install bind9-dnsutils bash coreutils gawk mutt curl jq wtmpdb
+
+# For Fedora
+sudo dnf install bind-utils bash coreutils gawk mutt curl jq 
 ```
 
 Then proceed to the **Getting Started** section below.
