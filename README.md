@@ -107,6 +107,8 @@ page and do the following. Note that it's better to use **apt** rather than
 ```bash
 sudo apt install ./luadns-ddns_1.0.0-1_amd64.deb
 ```
+During the package installation, the user is prompted to selected a user other
+than root to run the script if desired.
 
 Then proceed to the **Getting Started** section below.
 
@@ -130,6 +132,11 @@ sudo cp ./manual/luadns-ddns.1.gz /usr/share/man/man1/
 # Install the Systemd Unit Files
 sudo cp luadns-ddns.service /lib/systemd/system
 sudo cp luadns-ddns.timer /lib/systemd/system
+
+# Run the postinst script manually to run the script
+# as a user other than root (if desired)- see the section
+# on systemd below.
+sudo ./debian/postinst configure
 
 # Reload systemd
 sudo systemctl daemon-reload
