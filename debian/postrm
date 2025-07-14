@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+
+###################################
+# Debian Maintainer Postrm Script
+###################################
+# COPYRIGHT (C) Mark Finnan 2025
+###################################
+# Removes drop-in systemd directory and working
+# directory if left behind after an apt purge
+###################################
+
+# Recommended by Debian Policy Manual Here:
+# https://www.debian.org/doc/debian-policy/ch-maintainerscripts.html
+set -e
+
+# Script Variables
+package_name="luadns-ddns"
+dropin_dir="/etc/systemd/system/${package_name}.service.d"
+dropin_file="${dropin_dir}/user.conf"
+working_dir="/var/lib/${package_name}"
+
+###################################
+# Main Function
+###################################
+main() {
+  # Check for Purge Argument
+  if [ "${1}" == "purge" ]
+  then
+    # Remove Working Directory if it exists
+    if [ -d "${working_dir}" ]
+    then
+      echo "Removing ${working_dir}"
+      rm -rf "${working_dir}"
+    fi
+
+    # Remove Drop-In directory if it exists
+    if [ -d "${dropin_dir}" ]
+    then
+      echo "Removed ${dropin_dir}"
+      rm -rf "${dropin_dir}"
+    fi
+
+    # Exit with Success
+    exit 0
+
+  # Otherwise exit cleanly for all other arguments
+  else
+    exit 0
+  fi
+}
+
+###################################
+# Call Main Function
+###################################
+main "$@"
+

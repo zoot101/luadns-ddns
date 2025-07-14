@@ -1,0 +1,100 @@
+luadns-ddns (1.0.0-1) stable; urgency=medium
+
+  * Added support for a custom notification hook. The notification
+    hook is called like so:
+    $ /path/to/notification/hook "Email Subject" "Email Body"
+    $ /path/to/notification/hook "Email Subject" "Email Body" "Email Attachment"
+
+  * Added a -c, -h, -f arguments to the script.
+    -c|--config : Used to point the script to a different config file
+    -f|--force  : Force an update via the Luadns.com REST API
+    -h|--help   : Print a short help message
+
+  * Moved times_to_update to config file from main script to allow
+    editing it easily.
+
+  * API Server Response for updating the record is now checked 
+    directly for the Public IP instead of the "created_at" string.
+
+  * Zone ID And Record ID responses are now checked that they are
+    valid numbers.
+
+  * Moved point where new IP is recorded for the next run until after
+    successful API calls to update all record(s) at the end.
+
+    - This is to ensure that in the case where the API server
+      is down (rare!), the script will fail to update as expected, but
+      will retry the next time it is called. Previously this was not the
+      case.
+
+  * Added the ability to update multiple records at once. However they
+    should all belong to the same zone ie. be of the shape:
+    record1.example.org, record2.example.org etc.
+
+  * Added a notify_with_log parameter to the config file to allow
+    disabling the sending of the notification emails and calls to the
+    notification hook with the log file attached.
+
+  * Added a debian/postinst and debian/postrm script to automate
+    the installation to run as a user other than root, and remove
+    the files generated if purged.
+
+  * Installed systemd unit files into /lib/systemd/system instead
+    of /etc/systemd/system
+
+  * Changed working directory to /var/lib/luadns-ddns from 
+    /var/tmp/luadns-ddns.
+
+  * Added some wait time between the api calls when updates are
+    carried out. Also added a number of retires (3) to curl calls
+    to the API server.
+
+  * Added dependency for wtmpdb or util-linux in debian/control for
+    postinst script to ensure package installation works properly
+    on trixie, bookworm and bullseye.
+
+  * Code Cleanup - tidied up curl api calls, removed unecessary
+    comments.
+
+  * Updated manual entry.
+
+ -- Mark Finnan <mfinnan101@gmail.com>  Mon, 14 Jul 2024 08:17:36 +0100
+
+luadns-ddns (0.2.3-1) stable; urgency=medium
+
+  * Removed a reference to the author's domain name from the default
+    config file (typo!).
+
+ -- Mark Finnan <mfinnan101@gmail.com>  Sat, 22 Mar 2025 16:05:32 +0100
+
+luadns-ddns (0.2.2-1) stable; urgency=medium
+
+  * Corrected the same issue fixed below for the IP logging function.
+
+ -- Mark Finnan <mfinnan101@gmail.com>  Sun, 16 Mar 2025 19:52:19 +0100
+
+luadns-ddns (0.2.1-1) stable; urgency=medium
+
+  * Fixed Issue with email body file being unreadable if called through
+    systemd using the sample harden.conf dropin file.
+
+ -- Mark Finnan <mfinnan101@gmail.com>  Sat, 15 Feb 2025 15:44:11 +0100
+
+luadns-ddns (0.2.0-1) stable; urgency=medium
+
+  * Added check for zone being hosted at luadns.com.
+
+  * Removed need to specify the zone name directly in the config file.
+
+  * Added the ability for the script to use a config file in the same
+    directory as it also.
+
+  * Refined printed output.
+
+ -- Mark Finnan <mfinnan101@gmail.com>  Sat, 04 Jan 2025 13:16:41 +0100
+
+luadns-ddns (0.1.0-1) stable; urgency=medium
+
+  * Initial release.
+
+ -- Mark Finnan <mfinnan101@gmail.com>  Sun, 17 Dec 2024 09:12:41 +0100

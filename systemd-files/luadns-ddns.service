@@ -1,0 +1,16 @@
+# Recommend creating a drop-in file in /etc/systemd/system/luadns-ddns.service.d
+# instead of editing this file directly. See some examples in
+# /usr/share/doc/luadns-ddns/systemd-dropins/
+
+[Unit]
+Description=Checks for a new Public IP, and updates a record at Luadns.com if one is found.
+
+[Service]
+Type=oneshot
+UMask=002
+ExecStart=/usr/bin/luadns-ddns
+
+[Install]
+WantedBy=multi-user.target
+
+
