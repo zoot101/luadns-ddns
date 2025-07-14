@@ -1,4 +1,4 @@
-# luadns-ddns
+# Luadns-DDNS
 
 DDNS Client implemented as a Simple Bash Script that uses the **Luadns.com**
 REST API, with email notifications.
