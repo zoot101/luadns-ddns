@@ -17,11 +17,11 @@ A custom notification hook is also supported.
   - [Step 1 - Up-Front Requirements](#step-1---up-front-requirements)     
   - [Step 2 - Config File Setup](#step-2---config-file-setup)    
   - [Step 3 - Setting Up Email Notifications](#step-3---setting-up-email-notifications)
-    - [Email Notifications on IPFire](#email-notifications-on-ipfire)  
+    - [Email Notifications on IPFire](#email-notifications-on-ipfire)
+    - [Custom Notification Hook - ntfy](#custom-notification-hook---ntfy)
   - [Step 4 - Call the Script Directly](#step-4---call-the-script-directly)    
   - [Step 5 - Automation with Systemd](#step-5---automation-with-systemd)    
 - [Further Examples](#further-examples)    
-
 
 # Introduction
 
@@ -454,9 +454,19 @@ notification_hook="/opt/ipfire-hooks/send-email-ipfire.sh"
 export email_address="mail@example.comf"
 ```
 
-## Custom Notification Hook
+## Custom Notification Hook - ntfy
 
-Setting up the custom notification hook is left to the user and not considred here.
+An example custom notification hook that can be used to send notifications
+to ntfy ( ) is included here:
+
+https://github.com/zoot101/luadns-ddns/blob/main/docs/examples/ntfy-hook.sh
+
+To use it put the following in the config file (**/etc/luadns-ddns.conf**):
+
+```bash
+export ntfy_url="https://ntfy.sh/channel_name"
+notification_hook="/path/to/ntfy-hook.sh"
+```
 
 # Step 4 - Call the Script Directly
 
