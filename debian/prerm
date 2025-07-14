@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+
+############################
+# Debian prerm Maintainer Script 
+############################
+# Copyright (C) Mark Finnan 2025
+############################
+# Intended to be used across multiple packages as
+# a script that is called after the removal of a
+# package
+#
+# Simply checks if both the service/timer are running/enabled 
+# and stops/disables them accordingly.
+#
+# Ensures we don't have lingering enabled services with their
+# unit and timer file already deleted.
+###########################
+
+# Recommended from Debian Policy Manual
+# https://www.debian.org/doc/debian-policy/index.html 
+set -e
+
+############################
+# Initialize Variables
+############################
+# Package Name and Bin Path
+package_name="luadns-ddns"
+
+############################
+# Main Function
+############################
+main() {
+
+  # Input action
+  action="${1}"
+
+  # If systemd is not present exit regardless of action
+  # Just so the system handles the cases where systemd is not
+  # present (like Devuan?)
+  if [ ! -z $(which systemctl) ]
+  then
+    exit 0
+  fi
+  
+  # If doing an upgrade, we don't need to do anything
+  if [ "${action}" == "upgrade" ]
+  then
+    exit 0
+  fi
+  
+  # Check if the service/timer are either active or enabled
+  # then disable them or stop them accordingly
+  if [ "${action}" == "purge" ] || [ "${action}" == "remove" ]
+  then
+  
+    # Check if the service is enabled, for this script
+    # the service shouldn't be enabled as its just a oneshot
+    # service - stop it if it's running
+    if [ -f "/etc/systemd/system/""${package_name}"".service" ]
+    then
+      if systemctl is-active "${package_name}"".service" | grep -qw "active"
+      then
+        echo "Stopping" "${package_name}"".service"
+        systemctl stop "${package_name}"".service"
+      elif systemctl is-active "${package_name}"".service" | grep -qw "activating"
+      then
+        echo "Stopping" "${package_name}"".service"
+        systemctl stop "${package_name}"".service"
+      fi
+    
+      # Now disable the service if it's enabled
+      if systemctl is-enabled "${package_name}"".service" | grep -qw "enabled"
+      then
+        # Stop and Disable the Service
+        echo "Disabling" "${package_name}"".service"
+        systemctl disable "${package_name}"".service"
+      fi
+    fi
+  
+    # Check if the timer is started, if so - stop it
+    if [ -f "/etc/systemd/system/""${package_name}"".timer" ]
+    then
+      if systemctl is-active "${package_name}"".timer" | grep -qw "active"
+      then
+        echo "Stopping" "${package_name}"".timer"
+        systemctl stop "${package_name}"".timer"
+      fi
+     
+      # Now check if the timer is enabled, if it is - disable it
+      if systemctl is-enabled "${package_name}"".timer" | grep -qw "enabled"
+      then
+        # Stop and Disable the Service
+        echo "Disabling" "${package_name}"".timer"
+        systemctl disable "${package_name}"".timer"
+      fi
+    fi
+  
+    # Reload systemd
+    systemctl daemon-reload 
+  fi 
+  
+  # Exit with Success for all other actions
+  exit 0
+}
+
+############################
+# Call Main Function 
+############################
+main "$@"
+

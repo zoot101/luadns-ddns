@@ -1,0 +1,206 @@
+#!/usr/bin/env bash
+
+###################################
+# Debian Maintainer Postinst Script
+###################################
+# COPYRIGHT (C) Mark Finnan 2025
+###################################
+# Generates a drop-in file in the following to run the service
+# as a different user than root by default
+# /etc/systemd/system/${package_name}.service.d/user.conf
+#
+# Also ensures the permissions are updated on an additional working
+# directory. Usually - /var/lib/${package_name} if being used
+#
+# Notes: Require a dependency in debian/control for awk, coreutils
+# and wtmpdb
+###################################
+
+# Recommended by Debian Policy Manual Here:
+# https://www.debian.org/doc/debian-policy/ch-maintainerscripts.html
+set -e
+
+# Script Variables
+package_name="luadns-ddns"
+dropin_dir="/etc/systemd/system/${package_name}.service.d"
+dropin_file="${dropin_dir}/user.conf"
+working_dir="/var/lib/${package_name}"
+
+###################################
+# Main Function
+###################################
+main() {
+  # Check for Configure Argument
+  if [ "${1}" == "configure" ]
+  then
+    # Print Banner
+    #print_banner "${2}"
+    print_banner
+
+    # Check that systemd is present by looking for the systemctl
+    # command. If it ins't - Exit. This is to ensure the install
+    # can be completed on a Debian based distro that doesn't have
+    # systemd
+    if [ -z $(which systemctl) ]
+    then
+      echo "Systemd not present - Not attempting any config"
+      exit 0
+    fi
+
+    # Prompt the User for the username that the service will run as
+    # and generate the dropin file accordingly
+    generate_dropin_file "${1}"
+
+    # Exit with Success
+    exit 0
+
+  # Otherwise exit cleanly for all other arguments
+  else
+    exit 0
+  fi
+}
+
+###################################
+# Other Functions
+###################################
+# Generate Drop In File with a Specific User and Group
+write_dropin_file() {
+  local user1="${1}"
+  local group1="${2}"
+
+  # Create Drop-In File - Comment Out both Lines
+  # and leave fields empty if root was selected
+  if [ "${user1}" == "root" ]
+  then
+    echo "#[Service]" > "${dropin_file}"
+    echo "#User=" >> "${dropin_file}"
+    echo "#Group=" >> "${dropin_file}"
+  else 
+    echo "[Service]" > "${dropin_file}"
+    echo "User=$user1" >> "${dropin_file}"
+    echo "Group=$group1" >> "${dropin_file}"
+  fi
+}
+
+# Print Banner
+print_banner() {
+  echo ""
+  echo "###########################"
+  if [ -z "${1}" ]; then
+    echo "# Luadns-DDNS"
+  else
+    echo "# Luadns-DDNS Version:" "${1}"
+  fi
+  echo "###########################"
+}
+
+# Print Brief Message on how to start service
+print_instructions() {
+  echo "###########################"
+  echo "Done: ${dropin_file} generated with the following:"
+  echo "  User=${username}"
+  echo "  Group=${groupname}"
+  if [ "${permissions_updated}" == "yes" ]; then
+    echo "and permissions updated on: ${working_dir}"
+  fi
+  echo "Now setup the config file, see the following manpage:"
+  echo " "${package_name}"(1) or \$ man "${package_name}""
+  echo "When done, start the timer like so to automate:"
+  echo "  $ systemctl start ${package_name}.timer"
+  echo ""
+}
+
+# Get User and Group for Drop in File
+generate_dropin_file() {
+
+  # Check for existance of user drop in file, no prompting if
+  # already present
+  if [ ! -f "${dropin_file}" ]
+  then
+    # Find Last logged in non-root user
+    if [ ! -z $(which wtmpdb) ]
+    then
+      last_non_root_user=$(wtmpdb last | sed '/^root/d;s/[ ].*//' | sed -n 1p)
+    else 
+      last_non_root_user=$(last | sed '/^root/d;s/[ ].*//' | sed -n 1p)
+    fi
+
+    # Now prompt for the user that the service will run as
+    echo "What User should the script run as?"
+    echo " 1. ${last_non_root_user}? [Last Logged In Non-Root User]"
+    echo " 2. root?"
+    echo " 3. Other user?"
+    echo "Take Care if one selects option 3 - The user must exist"
+
+    # Read Users Response
+    read choice
+
+    # Check the Choice is Valid - Continue to Prompt if Not
+    while [ $choice != 1 ] && [ $choice != 2 ] && [ $choice != 3 ]
+    do
+      echo "Invalid Input: [Expected 1, 2, or 3] - Please Retry"
+      read choice
+    done
+
+    # Pick User Name to put in drop-in file
+    if [ $choice == 1 ]; then
+      username="${last_non_root_user}"
+    elif [ $choice == 2 ]; then
+      username="root"
+    elif [ $choice == 3 ]; then
+      echo "Please input the username and press Enter"
+      read username
+
+      # Check username is valid and exists - Prompt again if not
+      while ! id ${username} &> /dev/null
+      do
+        echo "Invalid User input - Please Retry"
+        read username
+      done
+    fi
+
+    # Now get the default group for the username (often the username
+    # again)
+    groupname=$(groups $username | awk '{print $3}')
+
+    # If the dropin directory doesn't exist - create it
+    if [ ! -d "${dropin_dir}" ]
+    then
+      mkdir "${dropin_dir}"
+      echo "Creating Drop-In Directory: ${dropin_dir}"
+    fi
+
+    # Write Drop-In File using above username and groupname
+    write_dropin_file "${username}" "${groupname}"
+
+    # Reload systemd
+    systemctl daemon-reload
+
+    # Update permissions on Script Dir (if it exists)
+    if [ ! -z "${working_dir}" ] && [ -d "${working_dir}" ]
+    then
+      chown -R $username:$groupname "${working_dir}"
+      chmod -R 775 "${working_dir}"
+      permissions_updated="yes"
+    else
+      permissions_updated="no"
+    fi
+
+    # Print Brief Instructions on how to start the timer
+    print_instructions
+
+  # Drop-In File already exists - just print what user is in it
+  else
+    current_user=$( sed '/User=/!d;s/User=//' "${dropin_file}")
+    echo "Service being ran as ${current_user} - To Change do the following:"
+    echo "  \$ rm "${dropin_file}""
+    echo "  \$ dpkg-reconfigure luadns-ddns"
+    echo ""
+  fi
+}
+
+###################################
+# Call Main Function
+###################################
+main "$@"
+
