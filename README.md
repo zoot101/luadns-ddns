@@ -9,7 +9,9 @@ A custom notification hook is also supported.
 
 - [Introduction](#introduction)    
   - [Usage](#usage)    
-- [Installation](#installation)     
+- [Installation](#installation)
+  - [Package Installation](#package-installation)
+  - [Manual Installation](#manual-installation)  
 - [Getting Started](#getting-started)     
   - [Step 1 - Up-Front Requirements](#step-1---up-front-requirements)     
   - [Step 2 - Config File Setup](#step-2---config-file-setup)    
@@ -93,6 +95,10 @@ The script can also be called with no options like so:
 
 # Installation
 
+Two methods are available for installation - via the package or manually.
+
+## Package Installation
+
 A package is provided for Debian and its derivatives. The author has tested this
 on Debian Bullseye (11), Debian Bookworm (12), and Debian Trixie (13) which means
 it should work on probably most Debian based distros out there.
@@ -111,6 +117,8 @@ During the package installation, the user is prompted to selected a user other
 than root to run the script if desired.
 
 Then proceed to the **Getting Started** section below.
+
+## Manual Installation
 
 Alternatively to install manually, do the following:
 
