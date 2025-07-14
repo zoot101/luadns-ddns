@@ -464,8 +464,13 @@ https://github.com/zoot101/luadns-ddns/blob/main/docs/examples/ntfy-hook.sh
 To use it put the following in the config file (**/etc/luadns-ddns.conf**):
 
 ```bash
+sudo mkdir /opt/luadns-ddns-hooks
+cd /opt/luadns-ddns-hooks
+sudo wget https://raw.githubusercontent.com/zoot101/luadns-ddns/refs/heads/main/docs/examples/ntfy-hook.sh
+
+# Then put the following in the config file (/etc/luadns-ddns.conf)
 export ntfy_url="https://ntfy.sh/channel_name"
-notification_hook="/path/to/ntfy-hook.sh"
+notification_hook="/opt/luadns-ddns-hooks/ntfy-hook.sh"
 ```
 
 # Step 4 - Call the Script Directly
