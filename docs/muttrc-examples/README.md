@@ -42,6 +42,16 @@ Note that 2FA is required to be enabled in your Gmail account,
 one will then have the option to create app passwords which
 can be specified directly in the **muttrc** file.
 
+Some time ago (at least for the author) the link to set up app passwords seems
+to have been removed from the google account page. Perhaps it is a sign that
+they will remove the feature eventually? Hopefully not.
+
+Nonetheless, if one cannot find the app password link within the Google account settings
+after enabling 2FA, you should be able to access it directly at the below link
+after signing in:    
+
+https://myaccount.google.com/apppasswords
+
 This muttrc works well for the author - change the password and
 email from **server@gmail.com** to the email you want to use and
 app password generated via the gmail account page. Change the "server.home.lan"
