@@ -10,12 +10,14 @@ A custom notification hook is also supported.
 - [Introduction](#introduction)    
   - [Usage](#usage)    
 - [Installation](#installation)
-  - [Package Installation](#package-installation)
-  - [Manual Installation](#manual-installation)  
+  - [Package Installation - Debian Based Distros](#package-installation---debian-based-distros)
+  - [Manual Installation - Other Distros](#manual-installation---other-distros)
+  - [Installation on IPFire](#installation-on-ipfire)
 - [Getting Started](#getting-started)     
   - [Step 1 - Up-Front Requirements](#step-1---up-front-requirements)     
   - [Step 2 - Config File Setup](#step-2---config-file-setup)    
-  - [Step 3 - Setting Up Email Notifications](#step-3---setting-up-email-notifications)    
+  - [Step 3 - Setting Up Email Notifications](#step-3---setting-up-email-notifications)
+    - [Email Notifications on IPFire](#email-notifications-on-ipfire)  
   - [Step 4 - Call the Script Directly](#step-4---call-the-script-directly)    
   - [Step 5 - Automation with Systemd](#step-5---automation-with-systemd)    
 - [Further Examples](#further-examples)    
@@ -95,16 +97,14 @@ The script can also be called with no options like so:
 
 # Installation
 
-Two methods are available for installation - via the package or manually.
-
-## Package Installation
+Two methods are available for installation - via the debian package or manually.
 
 A package is provided for Debian and its derivatives. The author has tested this
-on Debian Bullseye (11), Debian Bookworm (12), and Debian Trixie (13) which means
-it should work on probably most Debian based distros out there.
+on Debian Bullseye (11), Debian Bookworm (12), and Debian Trixie (13), Fedora 42 and
+IPFire (2.29 - Core 195).
 
-The author has also tested this script on IPFire
-https://ipfire.org
+
+## Package Installation - Debian Based Distros
 
 To install the package (for Debian based distros), download it from the releases
 page and do the following. Note that it's better to use **apt** rather than
@@ -118,7 +118,7 @@ than root to run the script if desired.
 
 Then proceed to the **Getting Started** section below.
 
-## Manual Installation
+## Manual Installation - Other Distros
 
 Alternatively to install manually, do the following:
 
@@ -132,10 +132,13 @@ git clone https://github.com/zoot101/luadns-ddns
 # Install the Main Script
 cd luadns-ddns
 chmod +x luadns-ddns
+sudo cp luadns-ddns /usr/bin/
 
 # Install the Manual Entry
-sudo cp luadns-ddns /usr/bin/
 sudo cp ./manual/luadns-ddns.1.gz /usr/share/man/man1/
+
+# Install the default config file
+sudo cp ./config/luadns-ddns.conf /etc/
 
 # Install the Systemd Unit Files
 sudo cp luadns-ddns.service /lib/systemd/system
@@ -168,6 +171,42 @@ sudo apt install bind9-dnsutils bash coreutils gawk mutt curl jq wtmpdb
 # For Fedora
 sudo dnf install bind-utils bash coreutils gawk mutt curl jq 
 ```
+
+## Installation on IPFire
+
+If one is using IPFire as their Firewall (it comes highly recommended from
+the author), it is easy to get the script up and running, but the steps are
+a bit different (see below):
+
+```bash
+# Update repo information
+pakfire update
+
+# Git is all that's required. Curl, awk, jq etc. are
+# all included in the default installation
+pakfire install git
+
+# Clone the Repo
+git clone https://github.com/zoot101/luadns-ddns
+
+# Install the Main Script
+cd luadns-ddns
+chmod +x luadns-ddns
+cp luadns-ddns /usr/bin/
+
+# Install the Config File
+cp ./config/luadns-ddns.conf /etc/
+```
+Note that for IPFire, **mutt** is not provided in the repos, but a sample
+notification hook script is provided here and one can use to send emails here:
+(See the section on Email Notifications below)
+
+- https://github.com/zoot101/luadns-ddns/blob/main/docs/examples/send-email-ipfire.sh
+
+To get the script to run as a user other than root on IPFire,
+follow the guide here as an example.
+
+- https://www.ipfire.org/docs/pkgs/fcron
 
 Then proceed to the **Getting Started** section below.
 
@@ -379,6 +418,43 @@ The following sample configurations are provided:
 * Gmail Using Oauth2    
 
 See the above for much more detailed instructions on setting it up.
+
+## Email Notifications on IPFire
+
+As mentioned above, sending emails is not possible on IPFire using **mutt** as it
+is not provided in the IPFire repos. However one can use the following hook script
+created by the author to send emails.
+
+- https://github.com/zoot101/luadns-ddns/blob/main/docs/examples/send-email-ipfire.sh
+
+First set up a valid email configuration using the Firewall's WebUI. See the official
+documentation here:
+
+- https://www.ipfire.org/docs/configuration/system/mail_service
+
+To use it, do the following:
+```bash
+mkdir /opt/ipfire-hooks
+cd /opt/ipfire-hooks
+wget https://github.com/zoot101/luadns-ddns/blob/main/docs/examples/send-email-ipfire.sh
+chmod +x send-email-ipfire.sh
+```
+
+Now in the main config (**/etc/luadns-ddns.conf**), do the following:
+```bash
+
+# Comment out the standard email parameters like so:
+#email_address="mail@example.com"#
+#muttrc_path="/path/to/muttrc/path"
+
+# Notification Hook
+# Specify the path to the above address and export the email you want
+# to receive email notifications at
+notification_hook="/opt/ipfire-hooks/send-email-ipfire.sh"
+export email_address="mail@example.comf"
+```
+
+## Custom Notification Hook
 
 Setting up the custom notification hook is left to the user and not considred here.
 
