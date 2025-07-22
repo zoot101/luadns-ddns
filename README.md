@@ -113,7 +113,7 @@ page and do the following. Note that it's better to use **apt** rather than
 ```bash
 sudo apt install ./luadns-ddns_1.0.0-1_amd64.deb
 ```
-During the package installation, the user is prompted to selected a user other
+During the package installation, the user is prompted to select a user other
 than root to run the script if desired.
 
 Then proceed to the **Getting Started** section below.
