@@ -21,7 +21,7 @@ A custom notification hook is also supported.
     - [Custom Notification Hook - ntfy](#custom-notification-hook---ntfy)
   - [Step 4 - Call the Script Directly](#step-4---call-the-script-directly)    
   - [Step 5 - Automation with Systemd](#step-5---automation-with-systemd)
-  - [Step 5 - IPFire Cron Setup](#step-5---ipfire-cron-setup)
+  - [Step 5 for IPFire - Cron Setup](#step-5-for-ipfire---cron-setup)
 - [Further Examples](#further-examples)    
 
 # Introduction
@@ -75,7 +75,7 @@ Luadns.com do mention using ddclient on their documentation (see below link), bu
 the author created a hook script for **dehydrated** for use with **Luadns.com**, it was
 a natural progression to create this DDNS update script.    
 
-* https://www.luadns.com/dyndns.html
+* [https://www.luadns.com/dyndns.html](https://www.luadns.com/dyndns.html)
 
 Note that the script only supports Type A DNS Records (IPv4 Addressing Only), IPv6 (AAAA) is
 not supported.
@@ -220,7 +220,7 @@ Note that for IPFire, **mutt** is not provided in the repos, but a sample
 notification hook script is provided here and one can use to send emails here:
 (See the section on Email Notifications below)
 
-- https://github.com/zoot101/luadns-ddns/blob/main/docs/examples/send-email-ipfire.sh
+- [https://github.com/zoot101/luadns-ddns/blob/main/docs/examples/send-email-ipfire.sh](https://github.com/zoot101/luadns-ddns/blob/main/docs/examples/send-email-ipfire.sh)
 
 Then proceed to the **Getting Started** section below.
 
@@ -416,14 +416,14 @@ export ntfy_url="https://ntfy.sh/channel_name"
 Note not to forget the "export".
 
 As before, a sample config file can be found here:    
-- https://github.com/zoot101/luadns-ddns/blob/main/config/luadns-ddns.conf
+- [https://github.com/zoot101/luadns-ddns/blob/main/config/luadns-ddns.conf](https://github.com/zoot101/luadns-ddns/blob/main/config/luadns-ddns.conf)
 
 # Step 3 - Setting Up Email Notifications
 
 A valid muttrc configuration is required to send email notifications.
 
 A number of sample configurations can be found here:   
-- https://github.com/zoot101/luadns-ddns/tree/main/docs/muttrc-examples
+- [https://github.com/zoot101/luadns-ddns/tree/main/docs/muttrc-examples](https://github.com/zoot101/luadns-ddns/tree/main/docs/muttrc-examples)
 
 The following sample configurations are provided:
 
@@ -439,12 +439,12 @@ As mentioned above, sending emails is not possible on IPFire using **mutt** as i
 is not provided in the IPFire repos. However one can use the following hook script
 created by the author to send emails.
 
-- https://github.com/zoot101/luadns-ddns/blob/main/docs/examples/send-email-ipfire.sh
+- [https://github.com/zoot101/luadns-ddns/blob/main/docs/examples/send-email-ipfire.sh](https://github.com/zoot101/luadns-ddns/blob/main/docs/examples/send-email-ipfire.sh)
 
 First set up a valid email configuration using the Firewall's WebUI. See the official
 documentation here:
 
-- https://www.ipfire.org/docs/configuration/system/mail_service
+- [https://www.ipfire.org/docs/configuration/system/mail_service](https://www.ipfire.org/docs/configuration/system/mail_service)
 
 To use it, do the following:
 ```bash
@@ -473,7 +473,7 @@ export email_address="mail@example.comf"
 An example custom notification hook that can be used to send notifications
 to **ntfy** is included here:
 
-https://github.com/zoot101/luadns-ddns/blob/main/docs/examples/ntfy-hook.sh
+- [https://github.com/zoot101/luadns-ddns/blob/main/docs/examples/ntfy-hook.sh](https://github.com/zoot101/luadns-ddns/blob/main/docs/examples/ntfy-hook.sh)
 
 To use it, do the following:
 
@@ -490,14 +490,14 @@ export ntfy_url="https://ntfy.sh/channel_name"
 notification_hook="/opt/luadns-ddns-hooks/ntfy-hook.sh"
 ```
 
-See ntfy documentation here: https://docs.ntfy.sh
+See ntfy documentation here: [https://docs.ntfy.sh](https://docs.ntfy.sh)
 
 # Step 4 - Call the Script Directly
 
 After the above steps have been carried out and the config file has been setup,
 one is ready to run the script directly.
 
-Call it from the command line like so. I recommend this be done as the user that
+Call it from the command line like so. It is recommended that this be done as the user that
 you intend the script to run as.
 
 ```bash
@@ -643,7 +643,7 @@ That is it - Thank you for your interest in this script and hopefully it is
 of use to you! Bug reports here on github are welcomed - don't hesitate if you find something
 wrong.
 
-## Step 5 - IPFire Cron Setup
+## Step 5 for IPFire - Cron Setup
 
 To get the script running via cron on IPFire, see the below page:
 
@@ -654,5 +654,5 @@ To get the script running via cron on IPFire, see the below page:
 Some examples are provided for **muttrc** configuration files along with
 systemd drop-in files here:
 
-- https://github.com/zoot101/luadns-ddns/tree/main/docs/muttrc-examples
-- https://github.com/zoot101/luadns-ddns/tree/main/docs/systemd-dropins
+- [https://github.com/zoot101/luadns-ddns/tree/main/docs/muttrc-examples](https://github.com/zoot101/luadns-ddns/tree/main/docs/muttrc-examples)
+- [https://github.com/zoot101/luadns-ddns/tree/main/docs/systemd-dropins](https://github.com/zoot101/luadns-ddns/tree/main/docs/systemd-dropins)
