@@ -6,7 +6,7 @@
 # COPYRIGHT (C) Mark Finnan 2024
 ######################################
 
-version="1.0.0"
+version="1.0.1"
 
 # Updates a DNS Record at Luadns.com using their API via curl to our public ip
 # address. This script is intended to be ran periodically via a systemd timer
@@ -92,7 +92,7 @@ log_to_email2() {
 
 # Curl Command For API Calls
 curl_api_call() {
-  curl --silent --retry $curl_retries -u ${lua_email}:${lua_api_key} \
+  curl --silent --show-error --retry $curl_retries -u ${lua_email}:${lua_api_key} \
        -H 'Accept: application/json' "$@"
 }
 
@@ -702,7 +702,7 @@ luadns_get_zone_id() {
 
   # Check for a Valid Response, and Extract the Zone ID
   check_response_was_valid "${response}"
-  zone_id=$(echo "${response}" | jq ".[] | select(.name==\"${luadns_zone_name}\") | .id")
+  zone_id=$(echo "${response}" | jq ".[] | select(.name==\"${luadns_zone_name}\").id")
 
   # Check Zone ID is a Valid Number
   if ! is_number "${zone_id}"
@@ -727,14 +727,14 @@ luadns_get_record_id() {
 
   # Get the record id. Process the json data
   # received to pull out only an A record that has the name we want.
-  local response=$(curl_api_call "${lua_api_url}"/zones/${luadns_zone_id})
+  local response=$(curl_api_call "${lua_api_url}"/zones/${luadns_zone_id}/records)
   
   # Check a valid response was received
   check_response_was_valid "${response}"
 
   # Use the jq command to step into the records section, go down a level,
   # then pick the block with the record name we want, then find it's id
-  record_id=$(echo "${response}" | jq ".records | .[] | select(.name==\"${luadns_record_name}\") | .id")
+  record_id=$(echo "${response}" | jq ".[] | select(.name==\"${luadns_record_name}\").id")
          
   # Check the Obtained Record ID is not Zero
   if ! is_number "${record_id}"
@@ -831,7 +831,6 @@ send_ip_change_notification() {
     send_email "DDNS Updated (IP Change)" "${logfile}"
     notification_hook "DDNS Updated (IP Change)" "${logfile}"
   fi
-
 }
 
 # Send Email with Mutt if Emails are Enabled
