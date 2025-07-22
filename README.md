@@ -20,7 +20,8 @@ A custom notification hook is also supported.
     - [Email Notifications on IPFire](#email-notifications-on-ipfire)
     - [Custom Notification Hook - ntfy](#custom-notification-hook---ntfy)
   - [Step 4 - Call the Script Directly](#step-4---call-the-script-directly)    
-  - [Step 5 - Automation with Systemd](#step-5---automation-with-systemd)    
+  - [Step 5 - Automation with Systemd](#step-5---automation-with-systemd)
+  - [Step 5 - IPFire Cron Setup](#step-5---ipfire-cron-setup)
 - [Further Examples](#further-examples)    
 
 # Introduction
@@ -199,17 +200,27 @@ cp luadns-ddns /usr/bin/
 
 # Install the Config File
 cp ./config/luadns-ddns.conf /etc/
+
+# Create the working directory for the script
+mkdir /var/lib/luadns-ddns
+
+# Next if you want the script to run as a user other
+# than root create a new user like so:
+useradd -U -d /home/user1 -s /bin/bash -c "non root user" user1
+
+# Update permissions on the script working directory
+chown -R user1:user1 /var/lib/luadns-ddns
 ```
+One can run the script as **root** on IPFire, but the author doesn't recommend it
+as the crontab for **root** is prone to getting changed upon subsequent
+updates to **IPFire**, to avoid this running as an alternative user to root is
+necessary.
+
 Note that for IPFire, **mutt** is not provided in the repos, but a sample
 notification hook script is provided here and one can use to send emails here:
 (See the section on Email Notifications below)
 
 - https://github.com/zoot101/luadns-ddns/blob/main/docs/examples/send-email-ipfire.sh
-
-To get the script to run as a user other than root on IPFire,
-follow the guide here as an example.
-
-- https://www.ipfire.org/docs/pkgs/fcron
 
 Then proceed to the **Getting Started** section below.
 
@@ -486,7 +497,8 @@ See ntfy documentation here: https://docs.ntfy.sh
 After the above steps have been carried out and the config file has been setup,
 one is ready to run the script directly.
 
-Call it from the command line like so:
+Call it from the command line like so. I recommend this be done as the user that
+you intend the script to run as.
 
 ```bash
 luadns-ddns
@@ -630,6 +642,12 @@ systemctl list-timers
 That is it - Thank you for your interest in this script and hopefully it is
 of use to you! Bug reports here on github are welcomed - don't hesitate if you find something
 wrong.
+
+## Step 5 - IPFire Cron Setup
+
+To get the script running via cron on IPFire, see the below page:
+
+[https://github.com/zoot101/luadns-ddns/edit/main/docs/cron-examples](https://github.com/zoot101/luadns-ddns/edit/main/docs/cron-examples)
 
 # Further Examples
 
