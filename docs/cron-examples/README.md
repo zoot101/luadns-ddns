@@ -32,30 +32,10 @@ To set the script up on IPFire follow the below procedure. One could get the scr
 run as root to not have to generate a new user, but this is not ideal as the default
 crontab is prone to being updated for subsequent versions of **IPFire**.
 
-## Step 1 - Add a Non-Root User
+## Step 1 - Allow the non-root user to use the Cron daemon
 
-```bash
-$ useradd -U -d / -s /bin/bash -c "non root fcrontab user" fcronuser
-```
-
-Explanation for the switches:
-
-* -U tells it to also create a group with the same name;
-* -d defines the home directory as /, although no home directory is created for system users
-* -s defines the login shell, in this case /bin/bash
-* -c is a comment about the user. It can be any string you want.
-fcronuser is a logical name but it can be whatever you want, as long as it is not already in use.
-
-After doing the above, one should see an entry in the /etc/passwd file that
-should look something like:
-
-```bash
-fcronuser:x:1004:1004:Non Root User:/home/fcronuser:/bin/bash
-```
-
-## Step 2 - Allow fcronuser to use the Cron daemon
-
-Edit **/etc/fcron.allow** and add **fcronuser** to it.
+Proceeding on from the main README where a user (user1 as an example) was created,
+edit **/etc/fcron.allow** and add **user1** to it.
 
 ```bash
 # Edit /etc/fcron.allow
@@ -63,16 +43,16 @@ nano /etc/fcron.allow
 
 # It should look something like this:
 root
-fcronuser
+user1
 ```
 
-## Step 3 - Create a fcrontab for fcronuser
+## Step 3 - Create a fcrontab for user1
 
 Do the following:
 
 ```bash
-# Create a crontab for fcronuser
-fcronuser -u fcronuser -e
+# Create a crontab for user1
+fcronuser -u user1 -e
 
 # Then paste in the following entry from above,
 # save and close
@@ -105,5 +85,4 @@ drwxr-xr-x 50 root root      4.0K Jul 22 17:59 ..
 -rw-r--r--  1 username nas-users   15 Jul 14 16:42 last-ip-check.txt
 # etc.
 ```
-
 
