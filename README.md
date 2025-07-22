@@ -134,6 +134,9 @@ cd luadns-ddns
 chmod +x luadns-ddns
 sudo cp luadns-ddns /usr/bin/
 
+# Create script working directory
+sudo mkdir /var/lib/luadns-ddns
+
 # Install the Manual Entry
 sudo cp ./manual/luadns-ddns.1.gz /usr/share/man/man1/
 
