@@ -1,6 +1,6 @@
 #!/usr/bin/dh-exec
 luadns-ddns /usr/bin
 config/luadns-ddns.conf /etc
-systemd-files/luadns-ddns.service /lib/systemd/system
-systemd-files/luadns-ddns.timer /lib/systemd/system
+systemd-files/luadns-ddns.service /usr/lib/systemd/system
+systemd-files/luadns-ddns.timer /usr/lib/systemd/system
 
