@@ -148,10 +148,12 @@ sudo cp ./config/luadns-ddns.conf /etc/
 sudo cp luadns-ddns.service /lib/systemd/system
 sudo cp luadns-ddns.timer /lib/systemd/system
 
-# Run the postinst script manually to run the script
-# as a user other than root (if desired)- see the section
-# on systemd below.
-sudo ./debian/postinst configure
+# If one wants to run the service as a user other
+# than root, generate a drop-in file like so:
+mkdir /etc/systemd/system/luadns-ddns.service.d/
+echo "[Service]" > /etc/systemd/system/luadns-ddns.service.d/user.conf
+echo "User=your_username" >> /etc/systemd/system/luadns-ddns.service.d/user.conf
+echo "Group=your_groupname" >> /etc/systemd/system/luadns-ddns.service.d/user.conf
 
 # Reload systemd
 sudo systemctl daemon-reload
@@ -595,12 +597,14 @@ Once the script is confirmed working, one can move on to systemd setup below.
 
 By default the following files are bundled with the package installation:
 
-* **/lib/systemd/system/luadns-ddns.service**       
-* **/lib/systemd/system/luadns-ddns.timer**  
+* **/usr/lib/systemd/system/luadns-ddns.service**       
+* **/usr/lib/systemd/system/luadns-ddns.timer**  
+
+For manual installations they will be in **/etc/systemd/system** instead.
 
 There should be no need to modify either of them, and it is especially
 recommended NOT to modify the timer file as the times to run match what
-are specifed in the script itself. However, in the event that  one DOES
+are specifed in the script itself. However, in the event that one DOES
 want to edit them, the best thing to do is create a copy
 at **/etc/systemd/system**.
 
