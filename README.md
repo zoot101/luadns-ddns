@@ -145,8 +145,8 @@ sudo cp ./manual/luadns-ddns.1.gz /usr/share/man/man1/
 sudo cp ./config/luadns-ddns.conf /etc/
 
 # Install the Systemd Unit Files
-sudo cp luadns-ddns.service /lib/systemd/system
-sudo cp luadns-ddns.timer /lib/systemd/system
+sudo cp luadns-ddns.service /etc/systemd/system
+sudo cp luadns-ddns.timer /etc/systemd/system
 
 # If one wants to run the service as a user other
 # than root, generate a drop-in file like so:
