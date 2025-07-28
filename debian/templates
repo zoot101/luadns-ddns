@@ -1,0 +1,13 @@
+Template: luadns-ddns/systemd_user
+Type: string
+Description: What user should the service run as?
+ Enter a valid username below, if a mistake is made, one can
+ run dpkg-reconfigure luadns-ddns from the command line 
+ to be prompted again. Leave blank for root.
+
+Template: luadns-ddns/systemd_group
+Type: string
+Description: What group should the service run as?
+ Enter a valid group below, if a mistake is made, one can re-run
+ dpkg-reconfigure luadns-ddns from the command line to be prompted
+ again. Leave blank to assume the default group. Leave blank for root.
