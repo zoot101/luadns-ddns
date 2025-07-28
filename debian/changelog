@@ -1,3 +1,22 @@
+luadns-ddns (1.0.2-1) stable; urgency=medium
+
+  * Completed Lintian check on debian package.
+
+  * Added a config maintainer script and overhauled postinst script,
+    now the user should be prompted in the traditional way for a
+    different user to run the service as upon installing the
+    package.
+
+  * This can be changed at any time through running this command:
+    $ dpkg-reconfigure luadns-ddns
+
+  * Removed dependency on wtmpdb or util-linux as neither are now
+    required.
+
+  * Minor refinements to man page.
+
+ -- Mark Finnan <mfinnan101@gmail.com>  Mon, 28 Jul 2025 20:49:19 +0100
+
 luadns-ddns (1.0.1-1) stable; urgency=medium
 
   * Added show error option to curl calls to aid in debugging
@@ -6,7 +25,7 @@ luadns-ddns (1.0.1-1) stable; urgency=medium
   * Simplified calls to jq to process the json data received
     back from the API Server.
 
- -- Mark Finnan <mfinnan101@gmail.com>  Tue, 22 Jul 2024 11:39:08 +0100
+ -- Mark Finnan <mfinnan101@gmail.com>  Tue, 22 Jul 2025 11:39:08 +0100
 
 luadns-ddns (1.0.0-2) stable; urgency=medium
 
@@ -14,7 +33,7 @@ luadns-ddns (1.0.0-2) stable; urgency=medium
     IPFire and for sending notifications to ntfy to the examples
     directory in the docs (/usr/share/doc/luadns-ddns/examples)
 
- -- Mark Finnan <mfinnan101@gmail.com>  Mon, 14 Jul 2024 16:51:43 +0100
+ -- Mark Finnan <mfinnan101@gmail.com>  Mon, 14 Jul 2025 16:51:43 +0100
 
 luadns-ddns (1.0.0-1) stable; urgency=medium
 
@@ -76,7 +95,7 @@ luadns-ddns (1.0.0-1) stable; urgency=medium
 
   * Updated manual entry.
 
- -- Mark Finnan <mfinnan101@gmail.com>  Mon, 14 Jul 2024 08:17:36 +0100
+ -- Mark Finnan <mfinnan101@gmail.com>  Mon, 14 Jul 2025 08:17:36 +0100
 
 luadns-ddns (0.2.3-1) stable; urgency=medium
 
