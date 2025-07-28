@@ -6,7 +6,7 @@
 # COPYRIGHT (C) Mark Finnan 2024
 ######################################
 
-version="1.0.1"
+version="1.0.2"
 
 # Updates a DNS Record at Luadns.com using their API via curl to our public ip
 # address. This script is intended to be ran periodically via a systemd timer
