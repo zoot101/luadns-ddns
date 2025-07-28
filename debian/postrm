@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh -e
 
 ###################################
 # Debian Maintainer Postrm Script
@@ -9,22 +9,24 @@
 # directory if left behind after an apt purge
 ###################################
 
-# Recommended by Debian Policy Manual Here:
-# https://www.debian.org/doc/debian-policy/ch-maintainerscripts.html
-set -e
-
 # Script Variables
 package_name="luadns-ddns"
 dropin_dir="/etc/systemd/system/${package_name}.service.d"
 dropin_file="${dropin_dir}/user.conf"
 working_dir="/var/lib/${package_name}"
 
+# Source debconf library.
+. /usr/share/debconf/confmodule
+db_version 2.0
+
+action="$1"
+
 ###################################
 # Main Function
 ###################################
 main() {
   # Check for Purge Argument
-  if [ "${1}" == "purge" ]
+  if [ "$action" = "purge" ]
   then
     # Remove Working Directory if it exists
     if [ -d "${working_dir}" ]
@@ -39,6 +41,14 @@ main() {
       echo "Removed ${dropin_dir}"
       rm -rf "${dropin_dir}"
     fi
+
+    # Purge debconf settings
+    echo "Purging debconf..."
+    db_purge
+
+    # Reload systemd
+    echo "Reloading systemd..."
+    systemctl daemon-reload
 
     # Exit with Success
     exit 0
