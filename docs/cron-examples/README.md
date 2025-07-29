@@ -16,7 +16,7 @@ The below should work assuming the script is in **/usr/bin**, change the path ac
 should match the **times_to_update** setting in the config file.
 
 ```bash
-00,02,04,06,08,10,12,14,16,18,20,22 00,10,20,30,40,50 * * * "/usr/bin/luadns-ddns"
+00,10,20,30,40,50 * * * * "/usr/bin/luadns-ddns"
 ```
 
 etc...
