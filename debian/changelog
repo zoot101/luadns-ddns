@@ -1,4 +1,4 @@
-luadns-ddns (1.0.2-1) stable; urgency=medium
+luadns-ddns (1.0.2-3) stable; urgency=medium
 
   * Completed Lintian check on debian package.
 
@@ -13,9 +13,11 @@ luadns-ddns (1.0.2-1) stable; urgency=medium
   * Removed dependency on wtmpdb or util-linux as neither are now
     required.
 
+  * Added pre-depends dependency for debconf.
+
   * Minor refinements to man page.
 
- -- Mark Finnan <mfinnan101@gmail.com>  Mon, 28 Jul 2025 20:49:19 +0100
+ -- Mark Finnan <mfinnan101@gmail.com>  Tue, 29 Jul 2025 09:46:19 +0100
 
 luadns-ddns (1.0.1-1) stable; urgency=medium
 
