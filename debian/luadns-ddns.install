@@ -1,4 +1,3 @@
-#!/usr/bin/dh-exec
 luadns-ddns /usr/bin
 config/luadns-ddns.conf /etc
 systemd-files/luadns-ddns.service /usr/lib/systemd/system
