@@ -1,4 +1,46 @@
-luadns-ddns (1.0.2-3) stable; urgency=medium
+luadns-ddns (1.0.2-14) stable; urgency=medium
+
+  * Removed print outs from postinst, and prerm maintainer scripts.
+
+  * Removed grep on /etc/passwd in postinst script in favor of 
+    using the id command to get rid of lintian warning. This is
+    ok, since coreutils is a dependency.
+
+  * Included the systemd drop-in file directory in luadns-ddns.dirs to
+    have it automatically removed from the system for uninstalls.
+    - Removed the section of the prerm script that deleted this
+      directory.
+
+  * Overhauled postinst and prerm scripts to use the debhelper addon
+    (dh_installsystemd) instead to handle the service and timer.
+
+  * Change debian/rules to override dh_installsystemd to not enable,
+    start, stop on upgrade, or restart on upgrade the unit files.
+    They have to be started manually by the user.
+
+  * The prerm script still needs to stop the timer/service files
+    since dh_installsystemd doesn't stop them if --no-enable and
+    --no-start is used in debian/rules.
+
+  * Script working directory is now deleted in the prerm script. This
+    should remove the warnings about /var/lib/luadns-ddns not being
+    empty upon removal.
+
+  * Introduced a build dependency for po-debconf, and created a po
+    directory address the lintian warning about translations. Not sure
+    this will ever be translated, but getting rid of the warning is
+    good nonetheless.
+
+  * Refined templates for prompts during installation to run the service
+    as a different user.
+
+  * Removed build dependency on dh-exec, as it is no longer required.
+
+  * Package is now 100% lintian clean with no overrides.
+
+ -- Mark Finnan <mfinnan101@gmail.com>  Fri, 01 Aug 2025 20:26:14 +0100
+
+luadns-ddns (1.0.2-1) stable; urgency=medium
 
   * Completed Lintian check on debian package.
 
