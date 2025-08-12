@@ -3,10 +3,10 @@
 ######################################
 # LUADNS DDNS UPDATE SCRIPT
 ######################################
-# COPYRIGHT (C) Mark Finnan 2024
+# Github Page: https://github.com/zoot101/luadns-ddns
 ######################################
 
-version="1.0.2"
+version="1.0.3"
 
 # Updates a DNS Record at Luadns.com using their API via curl to our public ip
 # address. This script is intended to be ran periodically via a systemd timer
@@ -113,15 +113,12 @@ parse_arguments() {
   # -c, --config : Specify a Path to a Custom Config File
   # -f, --force  : Force an update regardless of the time
   #                or whether an IP change is detected
-  while (( ${#} ))
-  do
+  while (( ${#} )); do
     case "${1}" in
-
       # Custom Config Argument
       -c|--config)
         shift 1
-        if [ ! -r "${1}" ]
-        then
+        if [ ! -r "${1}" ]; then
           echo "ERROR: Custom Config File given:" "${1}" "does not exist or is not readable - Exiting"
           exit 1
         else
@@ -173,28 +170,20 @@ print_help() {
 
 # Read and Check the Config File
 read_and_check_config_file() {
-  ######################################
-  # Read Config File
-  ######################################
+
   # Determine Script Directory & Define Config File 1 & 2
   script_directory="$(dirname "$(readlink -f "${0}")")"
   config_file1="/etc/luadns-ddns.conf"
   config_file2="${script_directory}""/luadns-ddns.conf"
 
-  # Pick Config File in Following Order of Preference
-  # 1: Via -c|--config argument
-  # 2: /etc/luadns-ddns.conf
-  # 3: /path/to/script/directory/luadns-ddns.conf
-  if [ "${using_custom_config}" == "yes" ]
-  then
+  # Pick Config File in Order of Preference
+  if [ "${using_custom_config}" == "yes" ]; then
     echo "INFO: Config File: ${config_file0}"
     source "${config_file0}"
-  elif [ -r "${config_file1}" ]
-  then
+  elif [ -r "${config_file1}" ]; then
     echo "INFO: Config File: ${config_file1}"
     source "${config_file1}"
-  elif [ -r "${config_file2}" ]
-  then
+  elif [ -r "${config_file2}" ]; then
     echo "INFO: Config File: ${config_file2}"
     source "${config_file2}"
   else
@@ -204,51 +193,36 @@ read_and_check_config_file() {
     exit 1
   fi
 
-  ######################################
   # Check the Contents of the Config File
-  ######################################
-  if [ -z "${ip_check_urls}" ]
-  then
+  if [ -z "${ip_check_urls}" ]; then
     echo "ERROR: No Urls to Get Public IP (ip_check_urls) specified in config file"
     exit 1
-  elif [ -z "${times_to_update}" ]
-  then
+  elif [ -z "${times_to_update}" ]; then
     echo "ERROR: No times to force update (times_to_update) specified in config file"
     exit 1
-  elif [ -z "${lua_email}" ]
-  then
+  elif [ -z "${lua_email}" ]; then
     echo "ERROR: No Email Address for Luadns (lua_email) specified in config file"
     exit 1
-  elif [ -z "${lua_api_key}" ]
-  then
+  elif [ -z "${lua_api_key}" ]; then
     echo "ERROR: No Luadns API key (lua_api_key) specified in config file"
     exit 
-  elif [ -z "${record_names}" ]
-  then
+  elif [ -z "${record_names}" ]; then
     echo "ERROR: No Record Name(s) for DDNS (record_names) specified in config file"
     exit 1
   fi
 
-  # Check for the ip_logging parameter, if commented out, set to "no"
-  if [ -z "${ip_logging}" ]
-  then
+  # Check for the ip_logging parameter, if commented out, set to "no", exit if invalid
+  if [ -z "${ip_logging}" ]; then
     ip_logging="no"
-
-  # Exit if the value is invalid
-  elif [ "${ip_logging}" != "yes" ] && [ "${ip_logging}" != "no" ]
-  then
+  elif [ "${ip_logging}" != "yes" ] && [ "${ip_logging}" != "no" ]; then
     echo "ERROR: Invalid value for ip_logging specified in config file - It should be \"yes\" or \"no\""
     exit 1
   fi
 
-  # Check for the notify_with_log parameter, if commented out, set to "no"
-  if [ -z "${notify_with_log}" ]
-  then
+  # Check for the notify_with_log parameter, if commented out, set to "no", exit if invalid
+  if [ -z "${notify_with_log}" ]; then
     notify_with_log="no"
-
-  # Exit if the value is invalid
-  elif [ "${notify_with_log}" != "yes" ] && [ "${notify_with_log}" != "no" ]
-  then
+  elif [ "${notify_with_log}" != "yes" ] && [ "${notify_with_log}" != "no" ]; then
     echo "ERROR: Invalid value for notify_with_log specified in config file - It should be \"yes\" or \"no\""
     exit 1
   fi
@@ -256,31 +230,25 @@ read_and_check_config_file() {
   # Get the Number of Records defined
   N_records=${#record_names[@]}
  
-  # Check Notification Hook exists and if it does that it is executable
-  if [ ! -z "${notification_hook}" ] && [ ! -f "${notification_hook}" ]
-  then
+  # Check Notification Hook exists and if it does that it is executable - exit if specifed and not executable
+  if [ ! -z "${notification_hook}" ] && [ ! -f "${notification_hook}" ]; then
     echo "ERROR: Notification Hook defined in config file:" "${notification_hook}" "does not exist - Exiting"
     exit 1
-  elif [ ! -z "${notification_hook}" ] && [ ! -x "${notification_hook}" ]
-  then
+  elif [ ! -z "${notification_hook}" ] && [ ! -x "${notification_hook}" ]; then
     echo "ERROR: Notification Hook:" "${notification_hook}" "is not executable - Exiting"
     exit 1
-  elif [ ! -z "${notification_hook}" ]
-  then
+  elif [ ! -z "${notification_hook}" ]; then
     echo "INFO: Notification Hook:" "${notification_hook}"
   fi
 
   # Now Decide if Emails are Going to be Sent or Not
-  if [ -z "${email_address}" ]
-  then
+  if [ -z "${email_address}" ]; then
     echo "INFO: email_address not defined in config file - Emails Disabled"
     disable_emails="yes"
-  elif [ -z "${muttrc_path}" ]
-  then
+  elif [ -z "${muttrc_path}" ]; then
     echo "INFO: muttrc_path not defined in config file - Emails Disabled"
     disable_emails="yes"
-  elif [ ! -r "${muttrc_path}" ]
-  then
+  elif [ ! -r "${muttrc_path}" ]; then
     echo "INFO: muttrc_path defined in config file does not exist or is not readable - Emails Disabled"
     disable_emails="yes"
   else
@@ -288,8 +256,7 @@ read_and_check_config_file() {
   fi
 
   # Check if mutt is installed - If not disable emails
-  if ! which mutt &> /dev/null
-  then
+  if ! which mutt &> /dev/null; then
     echo "INFO: mutt is not installed/found in PATH - Emails Disabled"
     disable_emails="yes"
   fi
@@ -297,29 +264,19 @@ read_and_check_config_file() {
 
 # Check Essential Dependencies are Installed
 check_dependencies() {
-  # Check for curl
-  if ! which curl &> /dev/null
-  then
+  if ! which curl &> /dev/null; then
     echo "ERROR: curl is not installed/found in PATH - Exiting"
     exit 1
-  # Check for jq
-  elif ! which jq &> /dev/null
-  then
+  elif ! which jq &> /dev/null; then
     echo "ERROR: jq is not installed/found in PATH - Exiting"
     exit 1
-  # Check for awk
-  elif ! which awk &> /dev/null
-  then
+  elif ! which awk &> /dev/null; then
     echo "ERROR: awk is not installed/found in PATH - Exiting"
     exit 1
-  # Check for dig
-  elif ! which dig &> /dev/null
-  then
+  elif ! which dig &> /dev/null; then
     echo "ERROR: dig is not installed/found in PATH - Exiting"
     exit 1
-  # Check for mktemp
-  elif ! which mktemp &> /dev/null
-  then
+  elif ! which mktemp &> /dev/null; then
     echo "ERROR: mktemp is not installed/found in PATH - Exiting"
     exit 1
   fi
@@ -328,8 +285,7 @@ check_dependencies() {
 # Check for Forced Update Times
 check_for_forced_update() {
   # If the Force Update Arg was given earlier
-  if [ "${force_update_arg}" == "yes" ]
-  then
+  if [ "${force_update_arg}" == "yes" ]; then
     force_update="yes"
     return 0
   fi
@@ -337,16 +293,11 @@ check_for_forced_update() {
   # Otherwise cycle through the times to see if theres a match
   n_times=${#times_to_update[@]}
   current_time=$(date +"%H:%M")
-
-  # Check for Match in Fixed Times...
-  for i in $(seq 0 1 $((n_times-1)))
-  do
-    if [ "${current_time}" == "${times_to_update[$i]}" ]
-    then
+  for i in $(seq 0 1 $((n_times-1))); do
+    if [ "${current_time}" == "${times_to_update[$i]}" ]; then
       force_update="yes"
       break
-    elif [ $i == $((n_times-1)) ]
-    then
+    elif [ $i == $((n_times-1)) ]; then
       force_update="no"
     fi
   done
@@ -354,30 +305,22 @@ check_for_forced_update() {
 
 # Generate Logfiles
 generate_logfiles() {
-  # Logging Directory and Files (That persist between runs)
   log_directory="/var/lib/luadns-ddns"
   last_ip_check="${log_directory}""/last-ip-check.txt"
 
   # Check the above directory is writable - Exit if not
-  if [ ! -w "${log_directory}" ]
-  then
+  if [ ! -w "${log_directory}" ]; then
     echo "ERROR: ${log_directory} is not writable - Exiting"
     exit 1
   fi
-
-  # Create a Temporary File for email-logfile
   logfile=$(mktemp -t "luadns-ddns.email.XXXXX.txt")
   logfile2=$(mktemp -t "luadns-ddns.email.XXXXX.txt")
   echo ""
 }
 
-# Log IP addresses received from URLs specified and email the
-# Maybe have another option to email the log seperately....
+# Log IP addresses received from URLs specified if enabled
 log_public_ip() {
-
-  # Only do the logging if enabled in the config file
-  if [ $ip_logging == "yes" ]
-  then
+  if [ $ip_logging == "yes" ]; then
     echo "IP Logging Enabled"
 
     # Generate ip log file for today and yesterday
@@ -386,33 +329,22 @@ log_public_ip() {
     
     # Check the logfiles exist, if there isn't one for today
     # we know this is the 1st run of the script today
-    if [ ! -f "${todays_ip_log}" ]
-    then
-      # Create Log File for the 1st time
+    if [ ! -f "${todays_ip_log}" ]; then
       echo " + 1st Run Today - Creating Log"
       echo $(date +"%H:%M:%S") ":" "${public_ip}" > "${todays_ip_log}"
 
-      # Check for a Logfile from Yesterday and send it via email/call the
-      # custom notification hook (if configured)
-      if [ -f "${yesterdays_ip_log}" ]
-      then
-        if [ "${notify_with_log}" == "yes" ]
-        then
-          # Create a Quick Email Body
+      # Check for a Logfile from Yesterday and send it via email/notification hook
+      if [ -f "${yesterdays_ip_log}" ]; then
+        if [ "${notify_with_log}" == "yes" ]; then
           log_to_email2 "Public IP Log from yesterday is attached"
           log_to_email2 ""
-
-          # Send log file from yesterday via email/call notification hook
           send_email "IP Address Log" "${logfile2}" "${yesterdays_ip_log}"
           notification_hook "IP Address Log" "${logfile2}" "${yesterdays_ip_log}"
-
-          # Invoke a little wait time here, to space out emails/notifications
           sleep 3
         fi
       fi
     else
-      # Script has been ran at least 1 time before today, in this case
-      # just Log the current IP and time
+      # Script has been ran at least 1 time before today, just log the ip and time
       echo " + Logging Public IP" "${public_ip}"
       echo $(date +"%H:%M:%S") ":" "${public_ip}" >> "${todays_ip_log}"
     fi
@@ -428,8 +360,7 @@ print_greeting() {
   echo "# Luadns.com DDNS Version:" "${version}"
   echo "######################################"
   echo "# Luadns.com API URL:" "${lua_api_url}"
-  for i in $(seq 0 1 $((N_records-1)))
-  do
+  for i in $(seq 0 1 $((N_records-1))); do
     echo "# Record Name $((i+1))/$N_records:" "${record_names[$i]}"
   done
   echo "# Zone Name:" "${zone_name}"
@@ -463,16 +394,13 @@ print_greeting() {
 get_zone_name() {
   local fqdn="${1}"
 
-  # Remove trailing dot if present. For getting the Zone ID the dot
-  # is undesired, but for record IDs it is needed.
-  if [ "${fqdn:0-1}" == "." ]
-  then 
+  # Remove trailing dot if present - Not needed for Zone ID
+  if [ "${fqdn:0-1}" == "." ]; then 
     fqdn="${fqdn::i-1}"
   fi
 
   # Exit if the fqdn is empty or does not have at least 1 dot.
-  if [ -z "${fqdn}" ] || [ -z $( echo "${fqdn}" | awk -F "." '{print $2}') ] 
-  then
+  if [ -z "${fqdn}" ] || [ -z $( echo "${fqdn}" | awk -F "." '{print $2}') ]; then
     echo " + ERROR: Record name supplied is invalid"
     exit 1
   fi
@@ -490,14 +418,11 @@ check_zone_is_valid() {
   echo "Checking Zone is valid and hosted at Luadns.com"
 
   # Step Through Each of the Luadns Nameservers
-  for i in $(seq 0 1 $((N_luadns_nameservers-1)))
-  do
-    if dig @"${luadns_nameservers[$i]}" +short NS "${zone}" &> /dev/null
-    then
+  for i in $(seq 0 1 $((N_luadns_nameservers-1))); do
+    if dig @"${luadns_nameservers[$i]}" +short NS "${zone}" &> /dev/null; then
       echo " + Success: Got Valid NS records for" "${zone}" "from" "${luadns_nameservers[$i]}"
       break
-    elif [ $i == $((N_luadns_nameservers-1)) ]
-    then
+    elif [ $i == $((N_luadns_nameservers-1)) ]; then
       echo " + Could Not Obtain NS records for" "${zone}" "from" "${luadns_nameservers[$i]}"
       echo " + No NS records found at Luadns for" "${zone}" "- Exiting"
       exit 1
@@ -510,55 +435,34 @@ check_zone_is_valid() {
 
 # Get Public IP
 get_public_ip() {
-
-  # Get the public IP by trying the urls specified in the array ip_check_urls.
   echo "Checking Public IP using the supplied urls..."
 
-  # Step Through Each URL Accordingly...
+  # Step Through Each URL Accordingly - Check the public ip using curl, look for 0 return code
   check_urls_number=${#ip_check_urls[@]}
-  for i in $(seq 0 1 $((check_urls_number-1)) )
-  do
-    # Check the Public IP using curl
+  for i in $(seq 0 1 $((check_urls_number-1)) ); do
     public_ip=$(curl --silent --retry $curl_retries "${ip_check_urls[$i]}")
     curl_grab_check=$?
 
-    # Check that the curl output is zero
-    if [ $curl_grab_check -eq 0 ]
-    then
-      # Validate the IP Address received
+    # Validate the Public IP received, try next url if invalid. Exit if all have been tried
+    if [ $curl_grab_check == 0 ]; then
       validate_ipv4_address "${public_ip}"
       valid_ip_check=$?
-
-      # Valid IP - Found
-      if [ $valid_ip_check == 0 ]
-      then
+      if [ $valid_ip_check == 0 ]; then
         echo " + Public IP determined to be" $public_ip "using" "${ip_check_urls[$i]}"
-
-        # Set Current IP Address equal to the Public IP
         current_public_ip=$public_ip
         break
-
-      # Non-Valid IP obtained, try the next url in the array
       else
-        # Check if we have tried all urls
-        if [ $i -eq $((check_urls_number-1)) ]
-        then
+        if [ $i == $((check_urls_number-1)) ]; then
           echo " + Output from" "${ip_check_urls[$i]}" "also not valid" 
           echo " + Errors using all check urls - Cannot determine public IP. Exiting"
           public_ip="Error"
-
-          # Exit the Script without writing anything to the logfile
           exit 1
         else
           echo " + Output from" "${ip_check_urls[$i]}" "not valid,trying next url..."
         fi
       fi
-
-    # Curl output was non-zero, that means it couldn't contact the url in question
     else
-      # Check if all urls have been tried
-      if [ $i -eq $((check_urls_number-1)) ]
-      then
+      if [ $i -eq $((check_urls_number-1)) ]; then
         echo " + Could not connect to" "${ip_check_urls[$i]}"" either."
         echo " + Errors using all check urls - Cannot determine public IP. Exiting"
         public_ip="Error"
@@ -574,13 +478,8 @@ get_public_ip() {
 validate_ipv4_address() {
   local ip_address="$1"
   local ipv4_regex='^(([1-9]?[0-9]|1[0-9][0-9]|2([0-4][0-9]|5[0-5]))\.){3}([1-9]?[0-9]|1[0-9][0-9]|2([0-4][0-9]|5[0-5]))$'
-
-  # Test if IP Address is valid
   local ip_test=$(echo "${ip_address}" | grep -Eo '^(([1-9]?[0-9]|1[0-9][0-9]|2([0-4][0-9]|5[0-5]))\.){3}([1-9]?[0-9]|1[0-9][0-9]|2([0-4][0-9]|5[0-5]))$')
-
-  # Test if above grep yielded a result or not
-  if [ -z "${ip_test}" ]
-  then
+  if [ -z "${ip_test}" ]; then
     echo " + ERROR: IP Address received is invalid - Exiting"
     exit 1
   else
@@ -593,8 +492,7 @@ check_for_ip_change() {
   echo "Checking for Public IP Change"
 
   # Check if there is an existing IP from the last check
-  if [ ! -f "$last_ip_check" ]
-  then
+  if [ ! -f "$last_ip_check" ]; then
     echo " + No Existing Public IP for Record Found - 1st Run of Script?"
     echo " + Proceeding to update via" "${lua_api_url}"
     echo "$public_ip" > "$last_ip_check"
@@ -603,18 +501,14 @@ check_for_ip_change() {
   else
     # Script has been ran at least once before
     first_run="no"
-
-    # There is an existing IP on Record, check for a change
     last_ip=$(cat "$last_ip_check")
 
     # Check for a Change
-    if [ "$public_ip" != "$last_ip" ]
-    then
+    if [ "$public_ip" != "$last_ip" ]; then
       echo " + Old Public IP : ${last_ip}"
       echo " + New Public IP : ${public_ip}"
       echo " + IP Change Detected - Proceeding to Update"
       ip_change="yes"
-
     else
       echo " + Old Public IP     : ${last_ip}" 
       echo " + Current Public IP : ${public_ip}"
@@ -627,20 +521,17 @@ check_for_ip_change() {
 # Update Record
 update_record() {
   # Print Message Depending on Options and Decide to update or not
-  if [ "${force_update}" == "yes" ]
-  then
+  if [ "${force_update}" == "yes" ]; then
     echo ""
     echo "Updating $N_records Record(s) [Forced]"
     echo " + Contacting Luadns.com REST API:" "${lua_api_url}"
     update_record="yes"
-  elif [ "${first_run}" == "yes" ]
-  then
+  elif [ "${first_run}" == "yes" ]; then
     echo ""
     echo "Updating $N_records Record(s) [First Run of Script]"
     echo " + Contacting Luadns.com REST API:" "${lua_api_url}"
     update_record="yes"
-  elif [ "${ip_change}" == "yes" ]
-  then
+  elif [ "${ip_change}" == "yes" ]; then
     echo ""
     echo "Updating $N_records Record(s) [IP Change Detected]"
     echo " + Last IP:" "${last_ip}"
@@ -652,16 +543,14 @@ update_record() {
     update_record="no"
   fi
 
-  if [ "${update_record}" == "yes" ]
-  then
+  if [ "${update_record}" == "yes" ]; then
     # Get the Zone ID for 1st defined record
     echo " + Getting Zone ID for" "${zone_name}"
     luadns_get_zone_id "${zone_name}"
     echo " + Found Zone ID:" "${zone_id}"
 
     # Loop Through each of the records
-    for i in $(seq 0 1 $((N_records-1)))
-    do
+    for i in $(seq 0 1 $((N_records-1))); do
       # Now Get the Record ID
       sleep $wait_time
       echo " + Updating Record $((i+1))/$N_records"
@@ -677,9 +566,7 @@ update_record() {
 
     # Update the Record of the Public IP. Moved here as this is only
     # done if all API calls to update the records are successful
-    if [ "${ip_change}" == "yes" ] || [ "${first_run}" == "yes" ]
-    then
-      # Overwrite the last IP check with the current IP
+    if [ "${ip_change}" == "yes" ] || [ "${first_run}" == "yes" ]; then
       echo "$public_ip" > "$last_ip_check"
       echo " + New IP: ${public_ip} recorded for next run"
       echo ""
@@ -697,16 +584,13 @@ luadns_get_zone_id() {
     exit 1
   fi
 
-  # Get the Zone ID for the Domain Above. jq syntax and check the response is valid
+  # Get the Zone ID for the Domain Above using jq and check the response is valid
   local response=$(curl_api_call "${lua_api_url}"/zones)
-
-  # Check for a Valid Response, and Extract the Zone ID
   check_response_was_valid "${response}"
   zone_id=$(echo "${response}" | jq ".[] | select(.name==\"${luadns_zone_name}\").id")
 
   # Check Zone ID is a Valid Number
-  if ! is_number "${zone_id}"
-  then
+  if ! is_number "${zone_id}"; then
     echo "  -> ERROR: Zone ID in API Server Response not Valid - Exiting"
     exit 1
   fi
@@ -717,28 +601,18 @@ luadns_get_record_id() {
   local luadns_zone_id="${1}"
   local luadns_record_name="${2}"
 
-  # Check for Trailing dot, if it's not there add it. This seems to be
-  # required to locate the record id correctly
-  if [ "${luadns_record_name:0-1}" != "." ]
-  then
-    # Add a trailing dot to the record name if not present 
+  # Check for Trailing dot, if it's not there add it - Required for the Record ID
+  if [ "${luadns_record_name:0-1}" != "." ]; then
     luadns_record_name="${luadns_record_name}""."
   fi
 
-  # Get the record id. Process the json data
-  # received to pull out only an A record that has the name we want.
+  # Get the record id. Process the json data to get the record ID & Check the Response
   local response=$(curl_api_call "${lua_api_url}"/zones/${luadns_zone_id}/records)
-  
-  # Check a valid response was received
   check_response_was_valid "${response}"
-
-  # Use the jq command to step into the records section, go down a level,
-  # then pick the block with the record name we want, then find it's id
   record_id=$(echo "${response}" | jq ".[] | select(.name==\"${luadns_record_name}\").id")
          
-  # Check the Obtained Record ID is not Zero
-  if ! is_number "${record_id}"
-  then
+  # Check the Obtained Record ID is a valid Number
+  if ! is_number "${record_id}"; then
     echo "  -> ERROR: Record ID in API Server Response not Valid - Exiting"
     exit 1
   fi
@@ -751,32 +625,21 @@ luadns_update_record() {
   local record_id="${3}" 
   local zone_id="${4}" 
 
-  # Check for Trailing dot, if it's not there add it. This seems to be
-  # required to locate the record id correctly
-  if [ "${record_name:0-1}" != "." ]
-  then
-    # Add a trailing dot to the record name, can't echo here...
+  # Check for Trailing dot, if it's not there add it - Required for Record ID
+  if [ "${record_name:0-1}" != "." ]; then
     record_name="${record_name}""."
   fi
 
-  # Do the Update using the template from the API Documentation
-  # Note the json data the '\"' is to release the " character to ensure
-  # it appears in what is passed into curl
+  # Do the Update using the template from the API Documentation & Check Response is valid
   local response=$(curl_api_call -X PUT \
    --data "{ \":zone_id\":${zone_id}, \":id\":${record_id}, \"name\":\"${record_name}\", \"type\":\"A\", \"content\":\"${record_content}\"}" \
    "${lua_api_url}"/zones/${zone_id}/records/${record_id})
-
-  # Check response was valid
   check_response_was_valid "${response}"
 
   # Check for the same public IP given in the response 
   success_check=$(echo "${response}"| jq ".content")
-
-  # Check a valid response was received
-  if [ "${success_check}" == \""${record_content}"\" ]
-  then
+  if [ "${success_check}" == \""${record_content}"\" ]; then
     echo "  -> API Server Reply: Updated Successfully to" "${record_content}"
-
   else
     echo "  -> Problem Updating Record - Exiting"
     exit 1
@@ -787,47 +650,33 @@ check_response_was_valid() {
   # Easiest thing to do is check the length of the string obtained is
   # greater than some number. Using 100 as a number for now...
   local response="${1}"
-
-  # Check Response is valid by looking at length of the string
-  if [ ${#response} -lt 100 ]
-  then
+  if [ ${#response} -lt 100 ]; then
     echo "+ ERROR: Invalid Response received from server - Exiting."
     exit 1
   fi
 }
 
-# Send Notification
+# Send Notification via Email/Notification Hook
 send_ip_change_notification() {
-
-  # Prepare Email Body
-  if [ "${first_run}" == "yes" ]
-  then
+  if [ "${first_run}" == "yes" ]; then
     log_to_email "First Run of Script"
-    for i in $(seq 0 1 $((N_records-1)))
-    do
+    for i in $(seq 0 1 $((N_records-1))); do
       log_to_email " * Record Name $((i+1))/$N_records:" "${record_names[$i]}"
     done
     log_to_email " * Public IP:" "${public_ip}"
     log_to_email " * Above records updated via ${lua_api_url}"
     log_to_email ""
-
-    # Send an Email/Call Notification Hook if Enabled
     send_email "DDNS Updated (First Run)" "${logfile}"
     notification_hook "DDNS Updated (First Run)" "${logfile}"
-
-  elif [ "${ip_change}" == "yes" ]
-  then
+  elif [ "${ip_change}" == "yes" ]; then
     log_to_email "Public IP Change Detected"
-    for i in $(seq 0 1 $((N_records-1)))
-    do
+    for i in $(seq 0 1 $((N_records-1))); do
       log_to_email " * Record Name $((i+1))/$N_records:" "${record_names[$i]}"
     done
     log_to_email " * Last IP:" "${last_ip}"
     log_to_email " * New IP:" "${public_ip}"
     log_to_email " * Above records updated via ${lua_api_url}"
     log_to_email ""
-
-    # Send an Email/Call Notification Hook if Enabled
     send_email "DDNS Updated (IP Change)" "${logfile}"
     notification_hook "DDNS Updated (IP Change)" "${logfile}"
   fi
@@ -840,11 +689,9 @@ send_email() {
   local email_attachment="${3}"
 
   # Check Emails are not disabled
-  if [ "${disable_emails}" == "no" ]
-  then
+  if [ "${disable_emails}" == "no" ]; then
     # Send with/without attachment if present or not
-    if [ -z "${email_attachment}" ]
-    then
+    if [ -z "${email_attachment}" ]; then
       echo "Sending Notification Email to ${email_address}""..."
       mutt -F $muttrc_path -s "$email_subject" $email_address < "${email_body}"
     else
@@ -869,14 +716,10 @@ notification_hook() {
   local notification_body="${2}"
   local notification_attachment="${3}"
 
-  # Call Custom Notification Hook if Enabled
-  if [ ! -z "${notification_hook}" ] && [ -x "${notification_hook}" ]
-  then
+  # Call Custom Notification Hook if Enabled - Pass in attachment if present
+  if [ ! -z "${notification_hook}" ] && [ -x "${notification_hook}" ]; then
     echo "Calling Notification Hook: ${notification_hook}"
-
-    # Pass in attachment if present, otherwise don't
-    if [ -z "${notification_attachment}" ]
-    then
+    if [ -z "${notification_attachment}" ]; then
       "${notification_hook}" "${notification_title}" "${notification_body}"
     else
       "${notification_hook}" "${notification_title}" "${notification_body}" "${notification_attachment}"
@@ -895,5 +738,4 @@ clean_up_logfiles() {
 # Call Main Function
 ######################################
 main "$@"
-
 
