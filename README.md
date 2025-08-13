@@ -1,7 +1,7 @@
 # Luadns-DDNS
 
-DDNS Client implemented as a Simple Bash Script that uses the **Luadns.com**
-REST API, with email notifications.
+DDNS Client implemented as a Simple Bash Script that uses the [Luadns.com](https://luadns.com)
+[REST API](https://www.luadns.com/api.html), with email notifications.
 
 A custom notification hook is also supported.
 
@@ -29,9 +29,9 @@ A custom notification hook is also supported.
 Thank you for your interest in this script. The author has been using this for quite a while
 now with great success, so hopefully it can prove useful to someone else also.
 
-This is a DDNS service implemented as a relatively simple bash script that tracks the
+This is a DDNS client implemented as a simple bash script that tracks the
 Public IP using a number of publically available websites that output the IP in plain text
-like **icanhazip.com** or **ifconfig.co**.
+like [icanhazip.com](https://icanhazip.com) or [ifconfig.co](https://ifconfig.co)
 
 It keeps track of the Public IP it receives from those servers and monitors it for changes. If
 changes are detected, it will update a corresponding DNS Record at **Luadns.com** using their
@@ -104,15 +104,14 @@ A package is provided for Debian and its derivatives. The author has tested this
 on Debian Bullseye (11), Debian Bookworm (12), and Debian Trixie (13), Fedora 42 and
 IPFire (2.29 - Core 195).
 
-
 ## Package Installation - Debian Based Distros
 
 To install the package (for Debian based distros), download it from the releases
-page and do the following. Note that it's better to use **apt** rather than
-**dpkg** so the dependencies will be automatically installed.
+page [HERE](https://github.com/zoot101/luadns-ddns/releases) and do the following.
+Note that it's better to use **apt** rather than **dpkg** so the dependencies will be automatically installed.
 
 ```bash
-sudo apt install ./luadns-ddns_1.0.0-1_amd64.deb
+sudo apt install ./luadns-ddns_1.0.2-1_amd64.deb
 ```
 During the package installation, the user is prompted to select a user other
 than root to run the script if desired.
@@ -121,24 +120,23 @@ Then proceed to the **Getting Started** section below.
 
 ## Manual Installation - Other Distros
 
-Alternatively to install manually, do the following:
+First download the latest source code archive from the releases page [HERE](https://github.com/zoot101/luadns-ddns/releases).
+and extract it, then do the below: 
 
 ```bash
-sudo apt install git # (On Debian based distros)
-sudo dnf install git-core # (On Fedora)
+unzip luadns-ddns-1.0.2.zip      # For the Zip File
+tar xvf luadns-ddns-1.0.2.zip    # For the Tar File
 
-# Clone the Repo
-git clone https://github.com/zoot101/luadns-ddns
+cd luadns-ddns
 
 # Install the Main Script
-cd luadns-ddns
 chmod +x luadns-ddns
 sudo cp luadns-ddns /usr/bin/
 
 # Create script working directory
 sudo mkdir /var/lib/luadns-ddns
 
-# Install the Manual Entry
+# Install the Manual Entry (Optional)
 sudo cp ./manual/luadns-ddns.1.gz /usr/share/man/man1/
 
 # Install the default config file
@@ -172,11 +170,8 @@ If on Debian, one can do the below. If you get an error about wtmpdb not
 being available, install util-linux instead.
 
 ```bash
-# For Debian Bookworm/Bullseye
-sudo apt install bind9-dnsutils bash coreutils gawk mutt curl jq util-linux
-
-# For Debian Trixie
-sudo apt install bind9-dnsutils bash coreutils gawk mutt curl jq wtmpdb
+# For Debian (or its derivatives)
+sudo apt install bind9-dnsutils bash coreutils gawk mutt curl jq
 
 # For Fedora
 sudo dnf install bind-utils bash coreutils gawk mutt curl jq 
@@ -184,23 +179,17 @@ sudo dnf install bind-utils bash coreutils gawk mutt curl jq
 
 ## Installation on IPFire
 
-If one is using IPFire as their Firewall (it comes highly recommended from
+If one is using [IPFire](https://www.ipfire.org) as their Firewall (it comes highly recommended from
 the author), it is easy to get the script up and running, but the steps are
 a bit different (see below):
 
 ```bash
-# Update repo information
-pakfire update
+unzip luadns-ddns-1.0.2.zip       # For the Zip File
+tar xvf luadns-ddns-1.0.2.tar.gz  # For the Tar File
 
-# Git is all that's required. Curl, awk, jq etc. are
-# all included in the default installation
-pakfire install git
-
-# Clone the Repo
-git clone https://github.com/zoot101/luadns-ddns
+cd luadns-ddns
 
 # Install the Main Script
-cd luadns-ddns
 chmod +x luadns-ddns
 cp luadns-ddns /usr/bin/
 
@@ -217,6 +206,9 @@ useradd -U -d /home/user1 -s /bin/bash -c "non root user" user1
 # Update permissions on the script working directory
 chown -R user1:user1 /var/lib/luadns-ddns
 ```
+All of the dependencies (curl, awk, jq etc.) are included in the default
+installation of [IPFire](https://www.ipfire.org).
+
 One can run the script as **root** on IPFire, but the author doesn't recommend it
 as the crontab for **root** is prone to getting changed upon subsequent
 updates to **IPFire**, to avoid this running as an alternative user to root is
@@ -315,7 +307,7 @@ file work quite well.
 
 Must be specified as an array like so:
 
-* ip_check_urls=( "url1" "url2" "url3" ) 
+* ip\_check\_urls=( "url1" "url2" "url3" ) 
 
 The script will initially try the 1st link specifed to get the Public IP address,
 failing that it will move on to the next one and so on. If all urls either can't
@@ -333,7 +325,7 @@ in **/etc/systemd/system/luadns-ddns.timer** to function as expected.
 
 Must be specified as an array with times in the following format (HH:MM)
 
-* times_to_update=( "00:00" "04:00" "10:00" .... "20:00" )
+* times\_to\_update=( "00:00" "04:00" "10:00" .... "20:00" )
 
 ### lua\_email
 
@@ -450,7 +442,7 @@ created by the author to send emails.
 First set up a valid email configuration using the Firewall's WebUI. See the official
 documentation here:
 
-- [https://www.ipfire.org/docs/configuration/system/mail_service](https://www.ipfire.org/docs/configuration/system/mail_service)
+- [https://www.ipfire.org/docs/configuration/system/mail\_service](https://www.ipfire.org/docs/configuration/system/mail_service)
 
 To use it, do the following:
 ```bash
@@ -521,7 +513,7 @@ A sample output for the case where no update is found is shown below:
 ```bash
 
 ######################################
-# Luadns.com DDNS Version: 1.0.0
+# Luadns.com DDNS Version: 1.0.2
 ######################################
 # Luadns.com API URL: https://api.luadns.com/v1
 # Record Name 1/1: server-ddns.example.org
@@ -554,7 +546,7 @@ result of an IP Change being detected.
 INFO: Config File: /etc/luadns-ddns.conf
 
 ######################################
-# Luadns.com DDNS Version: 1.0.0
+# Luadns.com DDNS Version: 1.0.2
 ######################################
 # Luadns.com API URL: https://api.luadns.com/v1
 # Record Name 1/1: server-ddns.example.org
