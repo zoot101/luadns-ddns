@@ -157,7 +157,7 @@ echo "Group=your_groupname" >> /etc/systemd/system/luadns-ddns.service.d/user.co
 
 # Update permissions on the working directory
 # if using a non-root user
-chown user1:user1 /var/lib/luadns-ddns/
+chown your_username:your_groupname /var/lib/luadns-ddns/
 
 # Reload systemd
 sudo systemctl daemon-reload
