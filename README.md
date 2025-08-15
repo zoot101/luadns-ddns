@@ -5,7 +5,7 @@ DDNS Client implemented as a Simple Bash Script that uses the [Luadns.com](https
 
 Useful if you already have a domain hosted at [Luadns.com](https://luadns.com) and want to add single or multiple dynamic records.
 
-A custom notification hook is also supported.
+A custom notification hook is also supported - an example is provided below for [ntfy](https://ntfy.sh).
 
 # Table of Contents
 
