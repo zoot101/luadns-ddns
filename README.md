@@ -3,6 +3,8 @@
 DDNS Client implemented as a Simple Bash Script that uses the [Luadns.com](https://luadns.com)
 [REST API](https://www.luadns.com/api.html), with email notifications.
 
+Useful if you already have a domain hosted at [Luadns.com](https://luadns.com) and want to add single or multiple dynamic records.
+
 A custom notification hook is also supported.
 
 # Table of Contents
