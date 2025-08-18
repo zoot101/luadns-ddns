@@ -68,6 +68,10 @@ following shape:
 * record-to-update2.mydomain.org    
 * record-to-update3.mydomain.org    
 
+If multiple records are specified and they are **NOT** part of the same DNS **Zone**, the script
+will exit with an error. If it is desired to update records on multiple DNS **Zones**, then it
+is best create a different config file and use **-c** option as specified below.
+
 The script also provides the capability to log the public IP each time it is called. The logs
 are kept around for 28 days and then deleted, this can be useful if for some reason access to
 the raw IP address is needed or the API server cannot be contacted (rare!). The log can also be
