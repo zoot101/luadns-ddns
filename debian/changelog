@@ -1,3 +1,16 @@
+luadns-ddns (1.0.3-1) stable; urgency=medium
+
+  * Introduced a check up front to see if all records specified
+    are from the same dns zone.
+    - That is, are in the shape record1.example.org, record2.example.org
+      record3.example.org etc.
+
+  * Removed copyright from main script in favor of debian/copyright.
+
+  * Code cleanup and trimmed comments.
+
+ -- Mark Finnan <mfinnan101@gmail.com>  Mon, 18 Aug 2025 10:19:53 +0100
+
 luadns-ddns (1.0.2-14) stable; urgency=medium
 
   * Removed print outs from postinst, and prerm maintainer scripts.
