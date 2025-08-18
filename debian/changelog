@@ -4,6 +4,10 @@ luadns-ddns (1.0.3-1) stable; urgency=medium
     are from the same dns zone.
     - That is, are in the shape record1.example.org, record2.example.org
       record3.example.org etc.
+    - If the zone name is found to be different, the script will now
+      exit with an error instead.
+    - Recommended using a different config file to update records
+      across multiple DNS Zones instead.
 
   * Removed copyright from main script in favor of debian/copyright.
 
