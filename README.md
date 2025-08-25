@@ -25,6 +25,7 @@ A custom notification hook is also supported - an example is provided below for 
   - [Step 5 - Automation with Systemd](#step-5---automation-with-systemd)
   - [Step 5 for IPFire - Cron Setup](#step-5-for-ipfire---cron-setup)
 - [Further Examples](#further-examples)    
+- [Issues](#issues)
 
 # Introduction
 
@@ -662,3 +663,10 @@ systemd drop-in files here:
 
 - [https://github.com/zoot101/luadns-ddns/tree/main/docs/muttrc-examples](https://github.com/zoot101/luadns-ddns/tree/main/docs/muttrc-examples)
 - [https://github.com/zoot101/luadns-ddns/tree/main/docs/systemd-dropins](https://github.com/zoot101/luadns-ddns/tree/main/docs/systemd-dropins)
+
+# Issues
+
+Bug reports here on Github are welcome - don't hestitate if you find something wrong.
+
+* [https://github.com/zoot101/luadns-ddns/issues](https://github.com/zoot101/luadns-ddns/issues)
+
