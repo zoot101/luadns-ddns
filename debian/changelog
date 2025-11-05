@@ -19,7 +19,7 @@ luadns-ddns (1.0.3-1) stable; urgency=medium
 
   * Code cleanup and trimmed comments.
 
- -- Mark Finnan <mfinnan101@gmail.com>  Mon, 18 Aug 2025 10:19:53 +0100
+ -- Mark Finnan <mark9000@fastmail.org>  Mon, 18 Aug 2025 10:19:53 +0100
 
 luadns-ddns (1.0.2-14) stable; urgency=medium
 
@@ -61,7 +61,7 @@ luadns-ddns (1.0.2-14) stable; urgency=medium
 
   * Package is now 100% lintian clean with no overrides.
 
- -- Mark Finnan <mfinnan101@gmail.com>  Fri, 01 Aug 2025 20:26:14 +0100
+ -- Mark Finnan <mark9000@fastmail.org>  Fri, 01 Aug 2025 20:26:14 +0100
 
 luadns-ddns (1.0.2-1) stable; urgency=medium
 
@@ -82,7 +82,7 @@ luadns-ddns (1.0.2-1) stable; urgency=medium
 
   * Minor refinements to man page.
 
- -- Mark Finnan <mfinnan101@gmail.com>  Tue, 29 Jul 2025 09:46:19 +0100
+ -- Mark Finnan <mark9000@fastmail.org>  Tue, 29 Jul 2025 09:46:19 +0100
 
 luadns-ddns (1.0.1-1) stable; urgency=medium
 
@@ -92,7 +92,7 @@ luadns-ddns (1.0.1-1) stable; urgency=medium
   * Simplified calls to jq to process the json data received
     back from the API Server.
 
- -- Mark Finnan <mfinnan101@gmail.com>  Tue, 22 Jul 2025 11:39:08 +0100
+ -- Mark Finnan <mark9000@fastmail.org>  Tue, 22 Jul 2025 11:39:08 +0100
 
 luadns-ddns (1.0.0-2) stable; urgency=medium
 
@@ -100,7 +100,7 @@ luadns-ddns (1.0.0-2) stable; urgency=medium
     IPFire and for sending notifications to ntfy to the examples
     directory in the docs (/usr/share/doc/luadns-ddns/examples)
 
- -- Mark Finnan <mfinnan101@gmail.com>  Mon, 14 Jul 2025 16:51:43 +0100
+ -- Mark Finnan <mark9000@fastmail.org>  Mon, 14 Jul 2025 16:51:43 +0100
 
 luadns-ddns (1.0.0-1) stable; urgency=medium
 
@@ -162,27 +162,27 @@ luadns-ddns (1.0.0-1) stable; urgency=medium
 
   * Updated manual entry.
 
- -- Mark Finnan <mfinnan101@gmail.com>  Mon, 14 Jul 2025 08:17:36 +0100
+ -- Mark Finnan <mark9000@fastmail.org>  Mon, 14 Jul 2025 08:17:36 +0100
 
 luadns-ddns (0.2.3-1) stable; urgency=medium
 
   * Removed a reference to the author's domain name from the default
     config file (typo!).
 
- -- Mark Finnan <mfinnan101@gmail.com>  Sat, 22 Mar 2025 16:05:32 +0100
+ -- Mark Finnan <mark9000@fastmail.org>  Sat, 22 Mar 2025 16:05:32 +0100
 
 luadns-ddns (0.2.2-1) stable; urgency=medium
 
   * Corrected the same issue fixed below for the IP logging function.
 
- -- Mark Finnan <mfinnan101@gmail.com>  Sun, 16 Mar 2025 19:52:19 +0100
+ -- Mark Finnan <mark9000@fastmail.org>  Sun, 16 Mar 2025 19:52:19 +0100
 
 luadns-ddns (0.2.1-1) stable; urgency=medium
 
   * Fixed Issue with email body file being unreadable if called through
     systemd using the sample harden.conf dropin file.
 
- -- Mark Finnan <mfinnan101@gmail.com>  Sat, 15 Feb 2025 15:44:11 +0100
+ -- Mark Finnan <mark9000@fastmail.org>  Sat, 15 Feb 2025 15:44:11 +0100
 
 luadns-ddns (0.2.0-1) stable; urgency=medium
 
@@ -195,10 +195,10 @@ luadns-ddns (0.2.0-1) stable; urgency=medium
 
   * Refined printed output.
 
- -- Mark Finnan <mfinnan101@gmail.com>  Sat, 04 Jan 2025 13:16:41 +0100
+ -- Mark Finnan <mark9000@fastmail.org>  Sat, 04 Jan 2025 13:16:41 +0100
 
 luadns-ddns (0.1.0-1) stable; urgency=medium
 
   * Initial release.
 
- -- Mark Finnan <mfinnan101@gmail.com>  Sun, 17 Dec 2024 09:12:41 +0100
+ -- Mark Finnan <mark9000@fastmail.org>  Sun, 17 Dec 2024 09:12:41 +0100
