@@ -173,8 +173,7 @@ Next ensure all dependencies are installed:
 * curl, jq, awk, dig
 * mutt
 
-If on Debian, one can do the below. If you get an error about wtmpdb not
-being available, install util-linux instead.
+If on Debian, one can do the below.
 
 ```bash
 # For Debian (or its derivatives)
