@@ -1,0 +1,13 @@
+# Recommended NOT to change the OnCalendar setting below as it
+# corresponds to the update times specifed in the script
+
+[Unit]
+Description=Checks for a new Public IP every 10 minutes, and updates a record at Luadns.com if one is found.
+
+[Timer]
+OnCalendar=*-*-* *:00,10,20,30,40,50:00
+Persistent=false
+
+[Install]
+WantedBy=timers.target
+

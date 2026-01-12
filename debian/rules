@@ -1,0 +1,22 @@
+#!/usr/bin/make -f
+
+# See debhelper(7) (uncomment to enable).
+# Output every command that modifies files on the build system.
+#export DH_VERBOSE = 1
+
+#################################
+# LuaDNS-DDNS debian/rules file
+#################################
+# Override dh_installsystemd to to not enable/start unit files
+# on installation, and not to stop or restart them either on 
+# upgrades
+
+%:
+	dh $@
+
+override_dh_installsystemd:
+	dh_installsystemd --no-enable \
+	                  --no-start \
+	                  --no-stop-on-upgrade \
+                          --no-restart-after-upgrade
+

@@ -1,0 +1,35 @@
+Template: luadns-ddns/systemd_user
+Type: string
+_Description: LuaDNS-DDNS User:
+ If you want to run the LuaDNS-DDNS script as a user other than root,
+ enter a valid username below. This is a relatively basic script and
+ does not need to be ran as root at all.
+ .
+ Pick a user that has access to a shell, your main user account should
+ be fine. This will run the service via systemd as the user you pick
+ and also update the permissions on the logging directory accordingly.
+ .
+ To change after installation, one can run the following command from the
+ command line to be prompted again for a user and group.
+ .
+ $ dpkg-reconfigure luadns-ddns
+ .
+ Leave blank to use root.
+
+Template: luadns-ddns/systemd_group
+Type: string
+_Description: LuaDNS-DDNS Group:
+ Following on from picking a user to run the script as, enter a group name
+ to go along with that user.
+ .
+ If you're unsure, you can leave the prompt blank to use the default group
+ for the user chosen just previously.
+ .
+ This will add the group permissions to the systemd
+ service, and also update the permissions on the working directory
+ accordingly.
+ .
+ To change after installation, run the following command from the command
+ line to be prompted again for a user and group.
+ .
+ $ dpkg-reconfigure luadns-ddns

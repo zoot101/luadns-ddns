@@ -1,0 +1,66 @@
+#!/bin/sh -e
+
+###################################
+# Debian Maintainer Postrm Script
+###################################
+# COPYRIGHT (C) Mark Finnan 2025
+###################################
+# Removes drop-in systemd directory and working
+# directory if left behind after an apt purge
+###################################
+
+# Script Variables
+package_name="luadns-ddns"
+dropin_dir="/etc/systemd/system/${package_name}.service.d"
+dropin_file="${dropin_dir}/user.conf"
+working_dir="/var/lib/${package_name}"
+
+# Source debconf library.
+. /usr/share/debconf/confmodule
+db_version 2.0
+
+action="$1"
+
+###################################
+# Main Function
+###################################
+main() {
+  # Check for Purge Argument
+  if [ "$action" = "purge" ]
+  then
+    # Remove Working Directory if it exists
+    if [ -d "${working_dir}" ]
+    then
+      echo "Removing ${working_dir}"
+      rm -rf "${working_dir}"
+    fi
+
+    # Remove Drop-In directory if it exists
+    if [ -d "${dropin_dir}" ]
+    then
+      echo "Removed ${dropin_dir}"
+      rm -rf "${dropin_dir}"
+    fi
+
+    # Purge debconf settings
+    echo "Purging debconf..."
+    db_purge
+
+    # Reload systemd
+    echo "Reloading systemd..."
+    systemctl daemon-reload
+
+    # Exit with Success
+    exit 0
+
+  # Otherwise exit cleanly for all other arguments
+  else
+    exit 0
+  fi
+}
+
+###################################
+# Call Main Function
+###################################
+main "$@"
+

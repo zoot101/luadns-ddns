@@ -1,0 +1,102 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the luadns-ddns package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: luadns-ddns\n"
+"Report-Msgid-Bugs-To: luadns-ddns@packages.debian.org\n"
+"POT-Creation-Date: 2025-08-03 12:04+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. Type: string
+#. Description
+#: ../templates:1001
+msgid "LuaDNS-DDNS User:"
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../templates:1001
+msgid ""
+"If you want to run the LuaDNS-DDNS script as a user other than root, enter a "
+"valid username below. This is a relatively basic script and does not need to "
+"be ran as root at all."
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../templates:1001
+msgid ""
+"Pick a user that has access to a shell, your main user account should be "
+"fine. This will run the service via systemd as the user you pick and also "
+"update the permissions on the logging directory accordingly."
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../templates:1001
+msgid ""
+"To change after installation, one can run the following command from the "
+"command line to be prompted again for a user and group."
+msgstr ""
+
+#. Type: string
+#. Description
+#. Type: string
+#. Description
+#: ../templates:1001 ../templates:2001
+msgid "$ dpkg-reconfigure luadns-ddns"
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../templates:1001
+msgid "Leave blank to use root."
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../templates:2001
+msgid "LuaDNS-DDNS Group:"
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../templates:2001
+msgid ""
+"Following on from picking a user to run the script as, enter a group name to "
+"go along with that user."
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../templates:2001
+msgid ""
+"If you're unsure, you can leave the prompt blank to use the default group "
+"for the user chosen just previously."
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../templates:2001
+msgid ""
+"This will add the group permissions to the systemd service, and also update "
+"the permissions on the working directory accordingly."
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../templates:2001
+msgid ""
+"To change after installation, run the following command from the command "
+"line to be prompted again for a user and group."
+msgstr ""
