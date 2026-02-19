@@ -1,0 +1,32 @@
+Source: luadns-ddns
+Section: misc
+Priority: optional
+Maintainer: Mark <mark9000@fastmail.org>
+Rules-Requires-Root: no
+Build-Depends:
+ debhelper-compat (= 13),
+ po-debconf (>=1.0.21),
+Standards-Version: 4.6.2
+Homepage: https://github.com/zoot101/luadns-ddns
+
+Package: luadns-ddns
+Architecture: any
+Pre-Depends:
+ debconf (>=1.5.77),
+Depends:
+ bind9-dnsutils (>=9.0),
+ gawk (>=5.0),
+ bash (>=5.0),
+ coreutils (>=8.32),
+ curl (>=7.8),
+ ${misc:Depends},
+Suggests:
+ mutt (>=2.2),
+Description: Simple Bash DDNS Script using Luadns.com
+ Checks for a public IP change and updates a record at
+ Luadns.com if one is found.
+ Email Notification functionality included.
+ Requires control of a domain using Luadns.com for DNS hosting.
+ Supports also the use of a custom notification hook as an
+ alternative to standard emails.
+

@@ -1,0 +1,210 @@
+luadns-ddns (1.0.3-3) stable; urgency=medium
+
+  * Update maintainer details.
+
+ -- Mark <mark9000@fastmail.org>  Thu, 01 Jan 2026 10:24:33 +0100
+
+luadns-ddns (1.0.3-2) stable; urgency=medium
+
+  * Update maintainer email.
+
+ -- Mark <mark9000@fastmail.org>  Wed, 05 Nov 2025 10:06:01 +0100
+
+luadns-ddns (1.0.3-1) stable; urgency=medium
+
+  * Introduced a check up front to see if all records specified
+    are from the same dns zone.
+    - That is, are in the shape record1.example.org, record2.example.org
+      record3.example.org etc.
+    - If the zone name is found to be different, the script will now
+      exit with an error instead.
+    - Recommended using a different config file to update records
+      across multiple DNS Zones instead.
+
+  * Removed copyright from main script in favor of debian/copyright.
+
+  * Code cleanup and trimmed comments.
+
+ -- Mark <mark9000@fastmail.org>  Mon, 18 Aug 2025 10:19:53 +0100
+
+luadns-ddns (1.0.2-14) stable; urgency=medium
+
+  * Removed print outs from postinst, and prerm maintainer scripts.
+
+  * Removed grep on /etc/passwd in postinst script in favor of 
+    using the id command to get rid of lintian warning. This is
+    ok, since coreutils is a dependency.
+
+  * Included the systemd drop-in file directory in luadns-ddns.dirs to
+    have it automatically removed from the system for uninstalls.
+    - Removed the section of the prerm script that deleted this
+      directory.
+
+  * Overhauled postinst and prerm scripts to use the debhelper addon
+    (dh_installsystemd) instead to handle the service and timer.
+
+  * Change debian/rules to override dh_installsystemd to not enable,
+    start, stop on upgrade, or restart on upgrade the unit files.
+    They have to be started manually by the user.
+
+  * The prerm script still needs to stop the timer/service files
+    since dh_installsystemd doesn't stop them if --no-enable and
+    --no-start is used in debian/rules.
+
+  * Script working directory is now deleted in the prerm script. This
+    should remove the warnings about /var/lib/luadns-ddns not being
+    empty upon removal.
+
+  * Introduced a build dependency for po-debconf, and created a po
+    directory address the lintian warning about translations. Not sure
+    this will ever be translated, but getting rid of the warning is
+    good nonetheless.
+
+  * Refined templates for prompts during installation to run the service
+    as a different user.
+
+  * Removed build dependency on dh-exec, as it is no longer required.
+
+  * Package is now 100% lintian clean with no overrides.
+
+ -- Mark <mark9000@fastmail.org>  Fri, 01 Aug 2025 20:26:14 +0100
+
+luadns-ddns (1.0.2-1) stable; urgency=medium
+
+  * Completed Lintian check on debian package.
+
+  * Added a config maintainer script and overhauled postinst script,
+    now the user should be prompted in the traditional way for a
+    different user to run the service as upon installing the
+    package.
+
+  * This can be changed at any time through running this command:
+    $ dpkg-reconfigure luadns-ddns
+
+  * Removed dependency on wtmpdb or util-linux as neither are now
+    required.
+
+  * Added pre-depends dependency for debconf.
+
+  * Minor refinements to man page.
+
+ -- Mark <mark9000@fastmail.org>  Tue, 29 Jul 2025 09:46:19 +0100
+
+luadns-ddns (1.0.1-1) stable; urgency=medium
+
+  * Added show error option to curl calls to aid in debugging
+    connection issues (if present).
+
+  * Simplified calls to jq to process the json data received
+    back from the API Server.
+
+ -- Mark <mark9000@fastmail.org>  Tue, 22 Jul 2025 11:39:08 +0100
+
+luadns-ddns (1.0.0-2) stable; urgency=medium
+
+  * Added a sample notification hook script for sending emails on
+    IPFire and for sending notifications to ntfy to the examples
+    directory in the docs (/usr/share/doc/luadns-ddns/examples)
+
+ -- Mark <mark9000@fastmail.org>  Mon, 14 Jul 2025 16:51:43 +0100
+
+luadns-ddns (1.0.0-1) stable; urgency=medium
+
+  * Added support for a custom notification hook. The notification
+    hook is called like so:
+    $ /path/to/notification/hook "Email Subject" "Email Body"
+    $ /path/to/notification/hook "Email Subject" "Email Body" "Email Attachment"
+
+  * Added a -c, -h, -f arguments to the script.
+    -c|--config : Used to point the script to a different config file
+    -f|--force  : Force an update via the Luadns.com REST API
+    -h|--help   : Print a short help message
+
+  * Moved times_to_update to config file from main script to allow
+    editing it easily.
+
+  * API Server Response for updating the record is now checked 
+    directly for the Public IP instead of the "created_at" string.
+
+  * Zone ID And Record ID responses are now checked that they are
+    valid numbers.
+
+  * Moved point where new IP is recorded for the next run until after
+    successful API calls to update all record(s) at the end.
+
+    - This is to ensure that in the case where the API server
+      is down (rare!), the script will fail to update as expected, but
+      will retry the next time it is called. Previously this was not the
+      case.
+
+  * Added the ability to update multiple records at once. However they
+    should all belong to the same zone ie. be of the shape:
+    record1.example.org, record2.example.org etc.
+
+  * Added a notify_with_log parameter to the config file to allow
+    disabling the sending of the notification emails and calls to the
+    notification hook with the log file attached.
+
+  * Added a debian/postinst and debian/postrm script to automate
+    the installation to run as a user other than root, and remove
+    the files generated if purged.
+
+  * Installed systemd unit files into /lib/systemd/system instead
+    of /etc/systemd/system
+
+  * Changed working directory to /var/lib/luadns-ddns from 
+    /var/tmp/luadns-ddns.
+
+  * Added some wait time between the api calls when updates are
+    carried out. Also added a number of retires (3) to curl calls
+    to the API server.
+
+  * Added dependency for wtmpdb or util-linux in debian/control for
+    postinst script to ensure package installation works properly
+    on trixie, bookworm and bullseye.
+
+  * Code Cleanup - tidied up curl api calls, removed unecessary
+    comments.
+
+  * Updated manual entry.
+
+ -- Mark <mark9000@fastmail.org>  Mon, 14 Jul 2025 08:17:36 +0100
+
+luadns-ddns (0.2.3-1) stable; urgency=medium
+
+  * Removed a reference to the author's domain name from the default
+    config file (typo!).
+
+ -- Mark <mark9000@fastmail.org>  Sat, 22 Mar 2025 16:05:32 +0100
+
+luadns-ddns (0.2.2-1) stable; urgency=medium
+
+  * Corrected the same issue fixed below for the IP logging function.
+
+ -- Mark <mark9000@fastmail.org>  Sun, 16 Mar 2025 19:52:19 +0100
+
+luadns-ddns (0.2.1-1) stable; urgency=medium
+
+  * Fixed Issue with email body file being unreadable if called through
+    systemd using the sample harden.conf dropin file.
+
+ -- Mark <mark9000@fastmail.org>  Sat, 15 Feb 2025 15:44:11 +0100
+
+luadns-ddns (0.2.0-1) stable; urgency=medium
+
+  * Added check for zone being hosted at luadns.com.
+
+  * Removed need to specify the zone name directly in the config file.
+
+  * Added the ability for the script to use a config file in the same
+    directory as it also.
+
+  * Refined printed output.
+
+ -- Mark <mark9000@fastmail.org>  Sat, 04 Jan 2025 13:16:41 +0100
+
+luadns-ddns (0.1.0-1) stable; urgency=medium
+
+  * Initial release.
+
+ -- Mark <mark9000@fastmail.org>  Sun, 17 Dec 2024 09:12:41 +0100
