@@ -1,3 +1,22 @@
+luadns-ddns (1.1.0-1) stable; urgency=medium
+
+  * Added interface_ip option to the configuration file. This allows
+    one to have the update of the Record at Luadns.com updated
+    over an alternative network interface.
+    - This is useful if one is using a system behind a firewall
+      whereby different public IP interfaces are reachable from
+      different local interfaces.
+
+  * Remove the usage of seq.
+
+ -- Mark <mark9000@fastmail.org>  Wed, 06 May 2026 10:35:11 +0100
+
+luadns-ddns (1.0.4-1) stable; urgency=medium
+
+  * Add an option to use a different interface for curl (NOT DONE YET)
+
+ -- Mark <mark9000@fastmail.org>  Fri, 20 Feb 2026 20:55:33 +0100
+
 luadns-ddns (1.0.3-3) stable; urgency=medium
 
   * Update maintainer details.
