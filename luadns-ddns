@@ -6,7 +6,7 @@
 # Github Page: https://github.com/zoot101/luadns-ddns
 ######################################
 
-version="1.0.3"
+version="1.1.0"
 
 # Updates a DNS Record at Luadns.com using their API via curl to our public ip
 # address. This script is intended to be ran periodically via a systemd timer
@@ -93,10 +93,15 @@ log_to_email2() {
   echo "$@" >> "${logfile2}"
 }
 
-# Curl Command For API Calls
+# Curl Command For API Calls (Use Non-Default Interface if Specified)
 curl_api_call() {
-  curl --silent --show-error --retry $curl_retries -u ${lua_email}:${lua_api_key} \
-       -H 'Accept: application/json' "$@"
+  if [ "${non_default_interface}" == "no" ]; then
+    curl --silent --show-error --retry $curl_retries -u ${lua_email}:${lua_api_key} \
+                                                     -H 'Accept: application/json' "$@"
+  else
+    curl --interface "${interface_ip}" --silent --show-error --retry $curl_retries \
+                      -u ${lua_email}:${lua_api_key} -H 'Accept: application/json' "$@"
+  fi
 }
 
 # Function to check if a Variable is a number >= 0
@@ -258,6 +263,18 @@ read_and_check_config_file() {
     disable_emails="no"
   fi
 
+  # Check if an alternative interface IP was specified
+  if [ -n "${interface_ip}" ]; then
+    # Now Check if the IP specified is actually a local interface
+    if ! ip a | grep -qw "${interface_ip}"; then
+      echo "ERROR: Specified interface_ip ${interface_ip} in config file is not a local interface IP - Exiting"
+      exit 1
+    fi
+    non_default_interface="yes"
+  else
+    non_default_interface="no"
+  fi
+
   # Check if mutt is installed - If not disable emails
   if ! which mutt &> /dev/null; then
     echo "INFO: mutt is not installed/found in PATH - Emails Disabled"
@@ -296,7 +313,7 @@ check_for_forced_update() {
   # Otherwise cycle through the times to see if theres a match
   n_times=${#times_to_update[@]}
   current_time=$(date +"%H:%M")
-  for i in $(seq 0 1 $((n_times-1))); do
+  for ((i=0; i<=(n_times-1); i++)); do
     if [ "${current_time}" == "${times_to_update[$i]}" ]; then
       force_update="yes"
       break
@@ -363,7 +380,10 @@ print_greeting() {
   echo "# Luadns.com DDNS Version:" "${version}"
   echo "######################################"
   echo "# Luadns.com API URL:" "${lua_api_url}"
-  for i in $(seq 0 1 $((N_records-1))); do
+  if [ -n "${interface_ip}" ]; then
+    echo "# Network Interface: ${interface_ip}"
+  fi
+  for ((i=0; i<=(N_records-1); i++)); do
     echo "# Record Name $((i+1))/$N_records:" "${record_names[$i]}"
   done
   echo "# Zone Name:" "${zone_name}"
@@ -415,7 +435,7 @@ get_zone_name() {
 # Check the Zone name associated with all records is the same. Start from 2nd record
 check_record_zones() {
   if [ $N_records -gt 1 ]; then
-    for i in $(seq 1 1 $((N_records-1))); do
+    for ((i=1; i<=(N_records-1); i++)); do
       local zone_check=$(echo "${record_names[$i]}" | awk -F "." '{ printf $(NF-1)"."$NF}')
       if [ "${zone_check}" != "${zone_name}" ]; then
         echo " + ERROR: Zone Name for Record: ${record_names[$i]} is different from ${record_names[0]}"
@@ -436,7 +456,7 @@ check_zone_is_valid() {
   echo "Checking Zone is valid and hosted at Luadns.com"
 
   # Step Through Each of the Luadns Nameservers
-  for i in $(seq 0 1 $((N_luadns_nameservers-1))); do
+  for ((i=0; i<=(N_luadns_nameservers-1); i++)); do
     if dig @"${luadns_nameservers[$i]}" +short NS "${zone}" &> /dev/null; then
       echo " + Success: Got Valid NS records for" "${zone}" "from" "${luadns_nameservers[$i]}"
       break
@@ -457,11 +477,15 @@ get_public_ip() {
 
   # Step Through Each URL Accordingly - Check the public ip using curl, look for 0 return code
   check_urls_number=${#ip_check_urls[@]}
-  for i in $(seq 0 1 $((check_urls_number-1)) ); do
-    public_ip=$(curl --silent --retry $curl_retries "${ip_check_urls[$i]}")
-    curl_grab_check=$?
+  for ((i=0; i<=(check_urls_number-1); i++)); do
+    if [ "${non_default_interface}" == "yes" ]; then
+      public_ip=$(curl --interface "${interface_ip}" --silent --retry $curl_retries "${ip_check_urls[$i]}")
+    else  
+      public_ip=$(curl --silent --retry $curl_retries "${ip_check_urls[$i]}")
+    fi
 
     # Validate the Public IP received, try next url if invalid. Exit if all have been tried
+    curl_grab_check=$?
     if [ $curl_grab_check == 0 ]; then
       validate_ipv4_address "${public_ip}"
       valid_ip_check=$?
@@ -568,7 +592,7 @@ update_record() {
     echo " + Found Zone ID:" "${zone_id}"
 
     # Loop Through each of the records
-    for i in $(seq 0 1 $((N_records-1))); do
+    for ((i=0; i<=(N_records-1); i++)) do
       # Now Get the Record ID
       sleep $wait_time
       echo " + Updating Record $((i+1))/$N_records"
@@ -678,7 +702,7 @@ check_response_was_valid() {
 send_ip_change_notification() {
   if [ "${first_run}" == "yes" ]; then
     log_to_email "First Run of Script"
-    for i in $(seq 0 1 $((N_records-1))); do
+    for ((i=0; i<=(N_records-1); i++)); do
       log_to_email " * Record Name $((i+1))/$N_records:" "${record_names[$i]}"
     done
     log_to_email " * Public IP:" "${public_ip}"
@@ -688,7 +712,7 @@ send_ip_change_notification() {
     notification_hook "DDNS Updated (First Run)" "${logfile}"
   elif [ "${ip_change}" == "yes" ]; then
     log_to_email "Public IP Change Detected"
-    for i in $(seq 0 1 $((N_records-1))); do
+    for ((i=0; i<=(N_records-1); i++)); do
       log_to_email " * Record Name $((i+1))/$N_records:" "${record_names[$i]}"
     done
     log_to_email " * Last IP:" "${last_ip}"
