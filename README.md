@@ -360,6 +360,23 @@ To define multiple records to update, use an array like so:
 
 * **record_name=( "ddns1.example.org" "ddns2.example.org" ... "ddnsN.example.org" )**
 
+### interface\_ip
+
+Use a non-default local network interface.
+
+This should not be needed for most setups. This option can be useful in the event
+one is running the script on a system behind a firewall with multiple local network
+interfaces whereby a different Public IP is reachable from those interfaces.
+
+An example could be a Dual WAN Setup, a Firewall that uses Policy
+Based Routing for different WAN connections, or if one is using a VPN
+and wishes the record to reflect the Public IP of the VPN instead.
+
+Must be a valid IPv4 address. Comment out if not using and to fall back to
+the default route. Example:
+
+* **interface_ip="192.168.7.4"**
+
 ### email\_address
 
 This is the email address notification emails are sent to. To disable emails
