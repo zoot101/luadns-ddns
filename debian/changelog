@@ -1,3 +1,41 @@
+luadns-ddns (1.2.0-1) stable; urgency=medium
+
+  * Improved Greeting:
+    - Added System Hostname and OS Name if they can be obtained.
+    - Added all other input parameters for clarity.
+
+  * Improved level of detail sent in emails. Previously it was
+    very minimial, now it contains most of the script output
+    for easy debugging.
+
+  * Added a notification_hook_compact_log parameter to generate
+    a more compact file for the notification hook. This is
+    better suited to services like ntfy or Telegram than the
+    standard email body.
+    - Updated default configuration file and manual entry.
+
+  * Made email more detailed if one uses the logging function
+    for the Public IP.
+    - Removed the call to the custom notification hook for
+      the IP log as email is a better format alone.
+
+  * Code Improvements:
+    - Added "set -euo pipefail" for modern error handling,
+      re-worked a number of parts of the script as a result.
+    - Improved dependency check. All major commands are now
+      checked for.
+    - Added "-r" into jq calls to avoid having to use escaped
+      "" characters.
+    - Removed pipes of echo into awk etc.
+    - Improved the generation of the curl command arguments
+      when obtaining the public ip.
+    - Improved the error detection methodology for curl api
+      commands.
+    - Tidied up sript with separate error and various logging
+      functions.
+
+ -- Mark <mark9000@fastmail.org>  Thu, 21 May 2026 21:05:09 +0100
+
 luadns-ddns (1.1.0-1) stable; urgency=medium
 
   * Added interface_ip option to the configuration file. This allows
