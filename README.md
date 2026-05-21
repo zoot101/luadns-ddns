@@ -398,14 +398,15 @@ This can be enabled to keep a daily log of the public IP address stretching back
 ### notify\_with\_log
 
 Each time the script is called for the 1st time in a day, it will send an email
-and/or call the custom notification hook (if configured) to send the user the log
-of all IP addresses recorded the previous day as an attachment.
+to send the user the log of all IP addresses recorded the previous day as an attachment.
 
 The idea behind this is that if the API Server cannot be contacted, one can
 fall back to the IP log sent by email.
 
 Valid values are \"yes\" or \"no\". Comment out or set to no if not using. Has no
 effect if the **ip_logging** setting above is not enabled.
+
+Note that the custom notification hook (if configured) is not used here.
 
 ### notification\_hook
 
@@ -438,6 +439,13 @@ Note not to forget the "export".
 
 As before, a sample config file can be found here:    
 - [https://github.com/zoot101/luadns-ddns/blob/main/config/luadns-ddns.conf](https://github.com/zoot101/luadns-ddns/blob/main/config/luadns-ddns.conf)
+
+### notification\_hook\_compact\_log
+
+By default the email report is quite detailed. This is too much information to services like ntfy, Telegram etc. Those are
+more suited to small messages. Enable this option to pass a smaller body of text to the notification hook.
+
+Comment out if not using. Should be set to "yes" or "no". Off by default.
 
 # Step 3 - Setting Up Email Notifications
 
@@ -531,83 +539,62 @@ option detailed above.
 ```bash 
 luadns-ddns -f
 ```
-A sample output for the case where no update is found is shown below:
+A sample output for the case for an IP change is shown below.
 
 ```bash
-
-######################################
-# Luadns.com DDNS Version: 1.0.2
-######################################
-# Luadns.com API URL: https://api.luadns.com/v1
-# Record Name 1/1: server-ddns.example.org
-# Zone Name: example.org
-# Logging Enabled: YES
-# Force Update: NO
-# Email Notifications: YES
-# Notification Hook: NO
-#####################################
-
-Checking Zone is valid and hosted at Luadns.com
- + Success: Got Valid NS records for example.org from ns1.luadns.net
-Checking Public IP using the supplied urls...
- + Public IP determined to be 1.2.3.4 using ifconfig.me
-IP Logging Enabled
- + Logging Public IP 1.2.3.4
-Checking for Public IP Change
- + Old Public IP     : 1.2.3.4
- + Current Public IP : 1.2.3.4
- + IP Change Not Detected
-No Update needed
-Removing /tmp files...
-
-```
-
-Here is a sample output for the case where the record is updated as a
-result of an IP Change being detected.
-
-```bash
-INFO: Config File: /etc/luadns-ddns.conf
-
-######################################
-# Luadns.com DDNS Version: 1.0.2
-######################################
-# Luadns.com API URL: https://api.luadns.com/v1
-# Record Name 1/1: server-ddns.example.org
-# Zone Name: example.org
-# Logging Enabled: YES
-# Force Update: NO
-# Email Notifications: YES
-# Notification Hook: NO
-#####################################
+##############################
+# Luadns.com DDNS Version: 1.2.0
+##############################
+Initialized at 10:41:15 on 21/04/2026
+ * Luadns.com API URL: https://api.luadns.com/v1
+ * Hostname: server.home.lan
+ * Host OS: Debian GNU/Linux 13 (trixie)
+Input Options:
+ * IP Check URL(s): 4
+    - ifconfig.me
+    - ifconfig.co
+    - icanhazip.com
+    - ipecho.net/plain
+ * Record Name 1/1: ddns-record.example.org
+ * Zone Name: example.org
+ * Logging Enabled: YES
+ * Force Update: NO
+ * Email Notifications: YES
+ * Notification Hook: YES
+ * Notification Hook Log: Compact
+Runlog is below:
 
 Checking Zone is valid and hosted at Luadns.com
- + Success: Got Valid NS records for example.org from ns1.luadns.net
+ * Success: Got Valid NS records for example.org from ns1.luadns.net
 Checking Public IP using the supplied urls...
- + Public IP determined to be 1.2.3.4 using ifconfig.me
-IP Logging Enabled
- + Logging Public IP 1.2.3.4
+ * Public IP determined to be 1.2.3.4 using ifconfig.me
+ * Logging Public IP 1.2.3.4
 Checking for Public IP Change
- + Old Public IP : 1.2.3.3
- + New Public IP : 1.2.3.4
- + IP Change Detected - Proceeding to Update
+ * Old Public IP : 1.2.3.3
+ * New Public IP : 1.2.3.4
+ * IP Change Detected - Proceeding to Update
 
 Updating 1 Record(s) [IP Change Detected]
- + Last IP: 1.2.3.3
- + New IP: 1.2.3.4
- + Contacting Luadns.com REST API: https://api.luadns.com/v1
- + Getting Zone ID for example.org
- + Found Zone ID: 1001
- + Updating Record 1/1
-  -> Getting Record ID for server-ddns.example.org
-  -> Found Record ID: 100101
-  -> Updating nas-ddns.example.org
+ * Last IP: 1.2.3.3
+ * New IP: 1.2.3.4
+ * Contacting Luadns.com REST API: https://api.luadns.com/v1
+ * Getting Zone ID for example.org
+ * Found Zone ID: 1234
+ * Updating Record 1/1
+  -> Getting Record ID for ddns-record.example.org
+  -> Found Record ID: 123456789
+  -> Updating ddns-record.example.org
   -> API Server Reply: Updated Successfully to 1.2.3.4
- + New IP: 1.2.3.4 recorded for next run
+ * New IP: 1.2.3.4 recorded for next run
 
-Sending Notification Email to user-email@example.com...
- + Notification Email sent successfully...
+Public IP Change Detected
+ * Record Name 1/1: ddns-record.example.org
+ * Last IP: 1.2.3.3
+ * New IP: 1.2.3.4
+ * Above records updated via https://api.luadns.com/v1
 
-Removing /tmp files...
+Regards,
+server.home.lan
 ```
 
 Once the script is confirmed working, one can move on to systemd setup below.
