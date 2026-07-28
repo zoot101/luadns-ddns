@@ -6,7 +6,7 @@
 # Github Page: https://github.com/zoot101/luadns-ddns
 ######################################
 
-version="1.2.0"
+version="1.3.0"
 
 # Modern error handling
 set -euo pipefail
@@ -88,33 +88,33 @@ main() {
 ######################################
 # Log to Email
 log_to_email() {
-  echo "$@" | tee -a "${logfile}"
+  printf '%s\n' "$*" | tee -a "${logfile}"
 }
 
 # Log to Email (For Logging)
 log_to_email2() {
-  echo "$@" | tee -a "${logfile2}"
+  printf '%s\n' "$*" | tee -a "${logfile2}"
 }
 
 # Compact Log (if using the notification hook & the compact log)
 log_to_compact() {
-  echo "$@" | tee -a "${compact_logfile}" &>/dev/null
+  printf '%s\n' "$*" | tee -a "${compact_logfile}" &>/dev/null
 }
 
 # Error Function
 error() {
-  echo "ERROR: $@"
+  printf '%s\n' "ERROR: $*"
   exit 1
 }
 
 # Curl Command For API Calls (Use Non-Default Interface if Specified)
 curl_api_call() {
   if [[ "${non_default_interface}" == "no" ]]; then
-    curl --silent --show-error --retry $curl_retries -u ${lua_email}:${lua_api_key} \
+    curl --silent --show-error --retry "$curl_retries" -u "${lua_email}:${lua_api_key}" \
                                                      -H 'Accept: application/json' "$@"
   else
-    curl --interface "${interface_ip}" --silent --show-error --retry $curl_retries \
-                      -u ${lua_email}:${lua_api_key} -H 'Accept: application/json' "$@"
+    curl --interface "${interface_ip}" --silent --show-error --retry "$curl_retries" \
+                      -u "${lua_email}:${lua_api_key}" -H 'Accept: application/json' "$@"
   fi
 }
 
@@ -142,6 +142,7 @@ unset_all_vars() {
   config_file1=
   config_file2=
   ip_check_urls=
+  interface_with_public_ip=
   times_to_update=
   lua_email=
   lua_api_key=
@@ -157,6 +158,7 @@ unset_all_vars() {
   # Other
   system_hostname=
   os_name=
+  public_ip_is_local=
   public_ip=
   last_ip=
   first_run=
@@ -175,7 +177,9 @@ parse_arguments() {
       # Custom Config Argument
       -c|--config)
         shift 1
-        if [[ ! -r "${1}" ]]; then
+        if (( $# == 0 )); then
+          error "Specified custom config file, but none given - Exiting"
+        elif [[ ! -r "${1}" ]]; then
           error" Custom Config File given:" "${1}" "does not exist or is not readable - Exiting"
         else
           using_custom_config="yes"
@@ -235,27 +239,43 @@ read_and_check_config_file() {
   # Pick Config File in Order of Preference
   if [[ "${using_custom_config}" == "yes" ]]; then
     echo "INFO: Config File: ${config_file0}"
+    # shellcheck source=./config/luadns-ddns.conf
     source "${config_file0}"
   elif [[ -r "${config_file1}" ]]; then
     echo "INFO: Config File: ${config_file1}"
+    # shellcheck source=./config/luadns-ddns.conf
     source "${config_file1}"
   elif [[ -r "${config_file2}" ]]; then
     echo "INFO: Config File: ${config_file2}"
+    # shellcheck source=./config/luadns-ddns.conf
     source "${config_file2}"
   else
     error "Config File not found in the following locations - 1: ${config_file1}, 2: ${config_file2} - Exiting"
   fi
 
+  # Determine the Method to Use to Get the IP - Check an Interface directly
+  # or contact the external servers specified by the ip_check_urls[@]
+  if [[ -n "${interface_with_public_ip}" ]]; then
+    if ! ip a | grep -qw "${interface_with_public_ip}"; then
+      error "Specified an Interface: ${interface_with_public_ip} but it does not exist - Exiting"
+    else
+      public_ip_is_local="yes"
+    fi
+  else
+    public_ip_is_local="no"
+    if [[ -z "${ip_check_urls[0]}" ]]; then
+      error "No Urls to Get Public IP (ip_check_urls) specified in config file"
+    fi
+  fi
+
   # Check the Contents of the Config File
-  if [[ -z "${ip_check_urls}" ]]; then
-    error "No Urls to Get Public IP (ip_check_urls) specified in config file"
-  elif [[ -z "${times_to_update}" ]]; then
+  if [[ -z "${times_to_update[0]}" ]]; then
     error "No times to force update (times_to_update) specified in config file"
   elif [[ -z "${lua_email}" ]]; then
     error "No Email Address for Luadns (lua_email) specified in config file"
   elif [[ -z "${lua_api_key}" ]]; then
     error "No Luadns API key (lua_api_key) specified in config file"
-  elif [[ -z "${record_names}" ]]; then
+  elif [[ -z "${record_names[0]}" ]]; then
     error "No Record Name(s) for DDNS (record_names) specified in config file"
   fi
 
@@ -277,11 +297,11 @@ read_and_check_config_file() {
   N_records=${#record_names[@]}
  
   # Check Notification Hook exists and if it does that it is executable - exit if specifed and not executable
-  if [[ ! -z "${notification_hook}" && ! -f "${notification_hook}" ]]; then
+  if [[ -n "${notification_hook}" && ! -f "${notification_hook}" ]]; then
     error "Notification Hook defined in config file:" "${notification_hook}" "does not exist - Exiting"
-  elif [[ ! -z "${notification_hook}" && ! -x "${notification_hook}" ]]; then
+  elif [[ -n "${notification_hook}" && ! -x "${notification_hook}" ]]; then
     error "Notification Hook:" "${notification_hook}" "is not executable - Exiting"
-  elif [[ ! -z "${notification_hook}" ]]; then
+  elif [[ -n "${notification_hook}" ]]; then
     echo "INFO: Notification Hook:" "${notification_hook}"
   fi
 
@@ -376,14 +396,14 @@ log_public_ip() {
     echo "IP Logging Enabled"
 
     # Generate ip log file for today and yesterday
-    todays_ip_log="${log_directory}""/ip_log_"$(date +"%Y-%m-%d")".log"
-    yesterdays_ip_log="${log_directory}""/ip_log_"$(date --date="yesterday" +"%Y-%m-%d")".log"
+    todays_ip_log="${log_directory}/ip_log_$(date +"%Y-%m-%d").log"
+    yesterdays_ip_log="${log_directory}/ip_log_$(date --date="yesterday" +"%Y-%m-%d").log"
     
     # Check the logfiles exist, if there isn't one for today
     # we know this is the 1st run of the script today
     if [[ ! -f "${todays_ip_log}" ]]; then
       log_to_email " * 1st Run Today - Creating Log"
-      echo $(date +"%H:%M:%S") ":" "${public_ip}" > "${todays_ip_log}"
+      echo "$(date +"%H:%M:%S") : ${public_ip}" > "${todays_ip_log}"
 
       # Check for a Logfile from Yesterday and send it via email/notification hook
       if [[ -f "${yesterdays_ip_log}" ]]; then
@@ -397,7 +417,7 @@ log_public_ip() {
     else
       # Script has been ran at least 1 time before today, just log the ip and time
       log_to_email " * Logging Public IP" "${public_ip}"
-      echo $(date +"%H:%M:%S") ":" "${public_ip}" >> "${todays_ip_log}"
+      echo "$(date +"%H:%M:%S") : ${public_ip}" >> "${todays_ip_log}"
     fi
 
     # Delete Logfiles older 28 days
@@ -423,16 +443,20 @@ print_greeting() {
   log_to_email "##############################"
   log_to_email "# Luadns.com DDNS Version:" "${version}"
   log_to_email "##############################"
-  log_to_email "Initialized at "$(date +%H:%M:%S)" on "$(date +%d/%m/%Y)
+  log_to_email "Initialized at $(date +%H:%M:%S) on $(date +%d/%m/%Y)"
   log_to_email " * Luadns.com API URL:" "${lua_api_url}"
   if [[ -n "${system_hostname}" ]]; then log_to_email " * Hostname: ${system_hostname}"; fi
   if [[ -n "${os_name}" ]]; then log_to_email " * Host OS: ${os_name}"; fi
   log_to_email "Input Options:"
   if [[ -n "${interface_ip}" ]]; then log_to_email " * Network Interface: ${interface_ip}"; fi
-  log_to_email " * IP Check URL(s): $check_urls_number"
-  for ((i=0; i<=check_urls_number-1; i++)); do
-    log_to_email "    - ${ip_check_urls[$i]}"
-  done
+  if [[ "${public_ip_is_local}" == "yes" ]]; then
+    log_to_email " * Interface with Public IP: ${interface_with_public_ip}"
+  else
+    log_to_email " * IP Check URL(s): $check_urls_number"
+    for ((i=0; i<=check_urls_number-1; i++)); do
+      log_to_email "    - ${ip_check_urls[$i]}"
+    done
+  fi
   for ((i=0; i<=(N_records-1); i++)); do
     log_to_email " * Record Name $((i+1))/$N_records:" "${record_names[$i]}"
   done
@@ -454,7 +478,7 @@ print_greeting() {
   else
     log_to_email " * Email Notifications: NO"
   fi
-  if [[ ! -z "${notification_hook}" ]]; then
+  if [[ -n "${notification_hook}" ]]; then
     log_to_email " * Notification Hook: YES"
     if [[ "${notification_hook_compact_log}" == "yes" ]]; then
       log_to_email " * Notification Hook Log: Compact"
@@ -488,9 +512,10 @@ get_zone_name() {
 
 # Check the Zone name associated with all records is the same. Start from 2nd record
 check_record_zones() {
+  local zone_check
   if [[ $N_records -gt 1 ]]; then
     for ((i=1; i<=(N_records-1); i++)); do
-      local zone_check=$(awk -F "." '{ printf $(NF-1)"."$NF}' <<<"${record_names[$i]}")
+      zone_check=$(awk -F "." '{ printf $(NF-1)"."$NF}' <<<"${record_names[$i]}")
       if [[ "${zone_check}" != "${zone_name}" ]]; then
         error "Zone Name for Record: ${record_names[$i]} is different from ${record_names[0]}"
       fi
@@ -522,49 +547,61 @@ check_zone_is_valid() {
 
 # Get Public IP
 get_public_ip() {
-  log_to_email "Checking Public IP using the supplied urls..."
 
-  # Step Through Each URL Accordingly - Check the public ip using curl, look for 0 return code
-  check_urls_number=${#ip_check_urls[@]}
-  for ((i=0; i<=(check_urls_number-1); i++)); do
-    if [[ "${non_default_interface}" == "yes" ]]; then
-      curl_args=(--interface "${interface_ip}" --silent --retry $curl_retries "${ip_check_urls[$i]}")
-    else  
-      curl_args=(--silent --retry $curl_retries "${ip_check_urls[$i]}")
+  # Look at the Interface Directly
+  if [[ "${public_ip_is_local}" == "yes" ]]; then
+    public_ip="$(ip -4 addr show "${interface_with_public_ip}" | awk '/inet/ { sub(/\/.*/,""); print $2; exit}')" 
+    if validate_ipv4_address "${public_ip}"; then
+      log_to_email " * Public IP determined to be ${public_ip} on ${interface_with_public_ip}"
+    else
+      error "Could not obtain an IP on ${interface_with_public_ip} - Exiting"
     fi
 
-    # Validate the Public IP received, try next url if invalid. Exit if all have been tried
-    if public_ip=$(curl "${curl_args[@]}"); then
-      if validate_ipv4_address "${public_ip}"; then
-        log_to_email " * Public IP determined to be" $public_ip "using" "${ip_check_urls[$i]}"
-        current_public_ip=$public_ip
-        break
+  # Otherwise use the External URLs
+  else
+    log_to_email "Checking Public IP using the supplied urls..."
+   
+    # Step Through Each URL Accordingly - Check the public ip using curl, look for 0 return code
+    check_urls_number=${#ip_check_urls[@]}
+    for ((i=0; i<=(check_urls_number-1); i++)); do
+      if [[ "${non_default_interface}" == "yes" ]]; then
+        curl_args=(--interface "${interface_ip}" --silent --retry "$curl_retries" "${ip_check_urls[$i]}")
+      else  
+        curl_args=(--silent --retry "$curl_retries" "${ip_check_urls[$i]}")
+      fi
+  
+      # Validate the Public IP received, try next url if invalid. Exit if all have been tried
+      if public_ip=$(curl "${curl_args[@]}"); then
+        if validate_ipv4_address "${public_ip}"; then
+          log_to_email " * Public IP determined to be $public_ip using ${ip_check_urls[$i]}"
+          break
+        else
+          if [[ $i == $((check_urls_number-1)) ]]; then
+            log_to_email " * Output from" "${ip_check_urls[$i]}" "also not valid" 
+            public_ip="Error"
+            error "Problem(s) using all check urls - Cannot determine public IP. Exiting"
+          else
+            log_to_email " * Output from" "${ip_check_urls[$i]}" "not valid,trying next url..."
+          fi
+        fi
       else
         if [[ $i == $((check_urls_number-1)) ]]; then
-          log_to_email " * Output from" "${ip_check_urls[$i]}" "also not valid" 
+          log_to_email " * Could not connect to" "${ip_check_urls[$i]}"" either."
           public_ip="Error"
           error "Problem(s) using all check urls - Cannot determine public IP. Exiting"
         else
-          log_to_email " * Output from" "${ip_check_urls[$i]}" "not valid,trying next url..."
+          log_to_email " * Could not connect to" "${ip_check_urls[$i]}"",trying next url..."
         fi
       fi
-    else
-      if [[ $i == $((check_urls_number-1)) ]]; then
-        log_to_email " * Could not connect to" "${ip_check_urls[$i]}"" either."
-        public_ip="Error"
-        error "Problem(s) using all check urls - Cannot determine public IP. Exiting"
-      else
-        log_to_email " * Could not connect to" "${ip_check_urls[$i]}"",trying next url..."
-      fi
+    done
     fi
-  done
-}
+  }
 
 # Validate IP Address Function using grep regex
 validate_ipv4_address() {
   local ip_address="$1"
-  local ipv4_regex='^(([1-9]?[0-9]|1[0-9][0-9]|2([0-4][0-9]|5[0-5]))\.){3}([1-9]?[0-9]|1[0-9][0-9]|2([0-4][0-9]|5[0-5]))$'
-  local ip_test=$(grep -Eo '^(([1-9]?[0-9]|1[0-9][0-9]|2([0-4][0-9]|5[0-5]))\.){3}([1-9]?[0-9]|1[0-9][0-9]|2([0-4][0-9]|5[0-5]))$' <<<"${ip_address}")
+  local ip_test
+  ip_test=$(grep -Eo '^(([1-9]?[0-9]|1[0-9][0-9]|2([0-4][0-9]|5[0-5]))\.){3}([1-9]?[0-9]|1[0-9][0-9]|2([0-4][0-9]|5[0-5]))$' <<<"${ip_address}")
   if [[ -z "${ip_test}" ]]; then
     error "IP Address received is invalid - Exiting"
   else
@@ -662,12 +699,13 @@ update_record() {
 # Get the Zone ID for the above Domain Name
 luadns_get_zone_id() {
   local luadns_zone_name="${1:-}"
+  local response
 
   # Sanity Check Zone Name isn't Empty
   if [[ -z "${luadns_zone_name}" ]]; then error "Zone Name: ${luadns_zone_name} is empty - Exiting"; fi
 
   # Get the Zone ID. If curl/jq fail, set the result to something that will fail the next checks
-  if ! local response=$(curl_api_call "${lua_api_url}"/zones); then local response=null ; fi
+  if ! response=$(curl_api_call "${lua_api_url}"/zones); then local response=null ; fi
   check_response_was_valid "${response}"
   if ! zone_id=$(jq -r ".[] | select(.name==\"${luadns_zone_name}\").id" <<<"${response}"); then zone_id=null ; fi
 
@@ -679,12 +717,13 @@ luadns_get_zone_id() {
 luadns_get_record_id() {
   local luadns_zone_id="${1}"
   local luadns_record_name="${2}"
+  local response
 
   # Check for Trailing dot, if it's not there add it - Required for the Record ID
   if [[ "${luadns_record_name:0-1}" != "." ]]; then luadns_record_name="${luadns_record_name}""."; fi
 
   # Get the record id. If curl or jq fail, set the result to something that will fail the next check
-  if ! local response=$(curl_api_call "${lua_api_url}"/zones/${luadns_zone_id}/records); then local response=null; fi
+  if ! response=$(curl_api_call "${lua_api_url}/zones/${luadns_zone_id}/records"); then response=null; fi
   check_response_was_valid "${response}"
   if ! record_id=$(jq -r ".[] | select(.name==\"${luadns_record_name}\").id" <<<"${response}"); then record_id=null; fi
          
@@ -698,19 +737,20 @@ luadns_update_record() {
   local record_content="${2}"
   local record_id="${3}" 
   local zone_id="${4}" 
+  local response success_check
 
   # Check for Trailing dot, if it's not there add it - Required for Record ID
   if [[ "${record_name:0-1}" != "." ]]; then record_name="${record_name}""."; fi
 
   # Do the Update using the template from the API Documentation & Check Response is valid
   # If curl/jq fail set the result to something that will fail the subsequnet checks
-  if ! local response=$(curl_api_call -X PUT \
+  if ! response=$(curl_api_call -X PUT \
    --data "{ \":zone_id\":${zone_id}, \":id\":${record_id}, \"name\":\"${record_name}\", \"type\":\"A\", \"content\":\"${record_content}\"}" \
-   "${lua_api_url}"/zones/${zone_id}/records/${record_id}); then local response=null; fi
+   "${lua_api_url}/zones/${zone_id}/records/${record_id}"); then response=null; fi
   check_response_was_valid "${response}"
 
   # Check for the same public IP given in the response 
-  if ! local success_check=$(jq -r ".content" <<<"${response}"); then local success_check=null; fi
+  if ! success_check=$(jq -r ".content" <<<"${response}"); then success_check=null; fi
   if [[ "${success_check}" == "${record_content}" ]]; then
     log_to_email "  -> API Server Reply: Updated Successfully to" "${record_content}"
   else
@@ -811,7 +851,7 @@ call_notification_hook() {
 
   # Call Custom Notification Hook if Enabled - Pass in attachment if present
   local notification_hook_args=( "${notification_title}" "${notification_body}" )
-  if [[ ! -z "${notification_hook}" && -x "${notification_hook}" ]]; then
+  if [[ -n "${notification_hook}" && -x "${notification_hook}" ]]; then
     echo "Calling Notification Hook: ${notification_hook}"
     if [[ -n "${notification_attachment}" ]]; then local notification_hook_args+=("${notification_attachment}"); fi
     if ! "${notification_hook}" "${notification_hook_args[@]}"; then
