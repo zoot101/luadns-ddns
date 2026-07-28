@@ -1,3 +1,26 @@
+luadns-ddns (1.3.0-1) stable; urgency=medium
+
+  * Added an option to the configuration file to get the script
+    to simply look at an interface directly for the IP address,
+    "interface_with_public_ip".
+    - This is useful for running the script on systems that already
+      have a Public IP.
+    - No external servers are contacted for the IP if this is used.
+
+ -- Mark <mark9000@fastmail.org>  Tue, 28 Jul 2026 09:52:09 +0100
+
+luadns-ddns (1.2.1-1) stable; urgency=medium
+
+  * Removed echo in favor of printf.
+
+  * Ran ShellCheck on the script and cleared up all warnings.
+
+  * Fixed an issue if the script was called with a custom config
+    file and no file was specified it would exit with an "Unbound
+    Variable" error.
+
+ -- Mark <mark9000@fastmail.org>  Sun, 12 Jul 2026 00:14:29 +0100
+
 luadns-ddns (1.2.0-1) stable; urgency=medium
 
   * Improved Greeting:
