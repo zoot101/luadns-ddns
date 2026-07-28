@@ -36,7 +36,8 @@ This is a DDNS client implemented as a simple bash script that tracks the
 Public IP using a number of publically available websites that output the IP in plain text
 like [icanhazip.com](https://icanhazip.com) or [ifconfig.co](https://ifconfig.co)
 
-It keeps track of the Public IP it receives from those servers and monitors it for changes. If
+It keeps track of the Public IP it receives from those servers and monitors it for changes, or
+by looking at the address of a local interface directly if the system already has a Public IP. If
 changes are detected, it will update a corresponding DNS Record at **Luadns.com** using their
 REST API Server.
 
@@ -118,7 +119,7 @@ page [HERE](https://github.com/zoot101/luadns-ddns/releases) and do the followin
 Note that it's better to use **apt** rather than **dpkg** so the dependencies will be automatically installed.
 
 ```bash
-sudo apt install ./luadns-ddns_1.0.2-1_amd64.deb
+sudo apt install ./luadns-ddns_1.3.0-1_amd64.deb
 ```
 During the package installation, the user is prompted to select a user other
 than root to run the script if desired.
@@ -131,8 +132,8 @@ First download the latest source code archive from the releases page [HERE](http
 and extract it, then do the below: 
 
 ```bash
-unzip luadns-ddns-1.0.2.zip      # For the Zip File
-tar xvf luadns-ddns-1.0.2.zip    # For the Tar File
+unzip luadns-ddns-1.3.0.zip      # For the Zip File
+tar xvf luadns-ddns-1.3.0.zip    # For the Tar File
 
 cd luadns-ddns
 
@@ -190,8 +191,8 @@ the author), it is easy to get the script up and running, but the steps are
 a bit different (see below):
 
 ```bash
-unzip luadns-ddns-1.0.2.zip       # For the Zip File
-tar xvf luadns-ddns-1.0.2.tar.gz  # For the Tar File
+unzip luadns-ddns-1.3.0.zip       # For the Zip File
+tar xvf luadns-ddns-1.3.0.tar.gz  # For the Tar File
 
 cd luadns-ddns
 
@@ -319,6 +320,17 @@ The script will initially try the 1st link specifed to get the Public IP address
 failing that it will move on to the next one and so on. If all urls either can't
 be contacted or do not reply with a valid IPv4 address, the script will exit
 with an error.
+
+### interface\_with\_public\_ip
+
+If the script is being ran on a system with a public IP address, this is a better
+option to use. In this case the IP address of the interface is checked directly and no
+external servers are contacted. Useful for systems that already have a public IP address
+like internet facing Firewalls.
+
+Using this setting takes precedence of the ip\_check\_urls above. Comment out if not using.
+
+* interface\_with\_public\_ip="enp1s0"
 
 ### times\_to\_update
 
@@ -543,7 +555,7 @@ A sample output for the case for an IP change is shown below.
 
 ```bash
 ##############################
-# Luadns.com DDNS Version: 1.2.0
+# Luadns.com DDNS Version: 1.3.0
 ##############################
 Initialized at 10:41:15 on 21/04/2026
  * Luadns.com API URL: https://api.luadns.com/v1
