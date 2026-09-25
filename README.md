@@ -256,7 +256,7 @@ exist it will fall back to the same directory as the script. If the config file 
 
 The config file parameters are discussed in more detail below:
 
-# public\_ip\_source
+### public\_ip\_source
 
 How does the script obtain the Public IP? As mentioned above, this can be set to three methods:
 
@@ -305,7 +305,7 @@ public_ip_dns_commands=(
 )
 ```
 
-# times\_to\_update
+### times\_to\_update
 
 Its useful to have the script update the desired records regardless at certain times throughout the day. This helps ensure the records
 are always updated and reachable.
@@ -331,6 +331,7 @@ times_to_update=(
   "22:00"
 )
 ```
+
 ### luadns\_email
 
 This is the logon email for your **Luadns.com** account.
