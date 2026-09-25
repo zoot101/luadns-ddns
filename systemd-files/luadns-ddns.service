@@ -4,6 +4,8 @@
 
 [Unit]
 Description=Checks for a new Public IP, and updates a record at Luadns.com if one is found.
+Documentation=man:luadns-ddns(1)
+After=network-online.target
 
 [Service]
 Type=oneshot
