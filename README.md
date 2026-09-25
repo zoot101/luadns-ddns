@@ -32,61 +32,51 @@ A custom notification hook is also supported - an example is provided below for 
 Thank you for your interest in this script. The author has been using this for quite a while
 now with great success, so hopefully it can prove useful to someone else also.
 
-This is a DDNS client implemented as a simple bash script that tracks the
-Public IP using a number of publically available websites that output the IP in plain text
-like [icanhazip.com](https://icanhazip.com) or [ifconfig.co](https://ifconfig.co)
+This is a DDNS client for domains hosted at **Luadns.com** implemented as a simple bash script that tracks the
+Public IP using 3 possible methods:
 
-It keeps track of the Public IP it receives from those servers and monitors it for changes, or
-by looking at the address of a local interface directly if the system already has a Public IP. If
-changes are detected, it will update a corresponding DNS Record at **Luadns.com** using their
-REST API Server.
+1. Directly looking at the IP of a Local Network Interface - Useful for Systems that already have Public IPs like Firewalls.     
+2. Using a number of publically available websites that output the IP in plain text like [icanhazip.com](https://icanhazip.com) or [ifconfig.co](https://ifconfig.co)    
+3. Using a DNS Request. Certain well known DNS providers like **Cloudflare** or **Google** have DNS records than when queried return the IP of the sender. This can be much quicker than HTTP/HTTPs requests.
 
-It will notify the user of an IP Change via email or through the use of a custom notification hook
-(if configured). The user is also notified the very 1st time the Script
-is ran. Emails are sent using **mutt**.
+It keeps track of the Public IP it receives from whichever of the above methods and monitors it for changes. If changes are detected, it will update a corresponding DNS Record or multiple DNS
+Records at **Luadns.com** using their REST API Server.
 
-An optional custom notification hook is also supported to allow the user to use an alternative form
-of notification in addition to or instead of the standard emails if desired (see below).
+It is intended to be ran as a scheduled task via systemd or cron job. The default implementation (if installed by the package) is to run every 5 minutes.
 
-The script will also update the DNS Record at **Luadns.com** at certain times regardless of whether
-a change in the Public IP is detected or not. This ensures the DNS Record is kept up to date
+The **Luadns.com** DNS Nameservers are then queried for the updated DNS Record or Records to make sure the update was successful. If an error is encountered or the records fail to update,
+the script will then automatically try to update the DNS records at the next interval it is ran even if it does not detect a change in the Public IP address. This gives the best possible chance that
+the DNS records one is using for DDNS are reliably updated.
+
+It will notify the user of an IP Change via email or through the use of a custom notification hook (if configured). The user is also notified the very 1st time the Script
+is ran. Emails are sent using **mutt**. Sample email configurations are shown below.
+
+An optional custom notification hook is also supported to allow the user to use an alternative form of notification in addition to or instead of the standard emails if desired (see below).
+
+The script will also update the DNS Record or Records at **Luadns.com** at certain times regardless of whether a change in the Public IP is detected or not. This ensures the DNS Record is kept up to date
 at all times regardless of the circumstances.
 
-It is intended to be ran as a scheduled task via systemd or cron job. The default implementation
-(if installed by the package) is to run every 10 minutes.
+Updating multiple records is also supported. This is to handle the situation whereby multiple records point to the same IP address which is dynamic and can change. 
 
-Updating multiple records is also supported. This is to handle the situation whereby multiple
-records point to the same IP address which is dynamic and can change. 
+Usually in this situation one would get a DDNS client to update a single record, and change all of the other records to CNAMEs to point to the former record.
 
-Usually in this situation one would get a DDNS client to update a single record, and change all
-of the other records to CNAMEs to point to the former record.
-
-This works but CNAME records increase the amount of queries. The script presents an alternative
-to this by supporting the update of multiple records at once. However it is assumed that if multiple
-records are being used, all are part of the same DNS **Zone**, that is they are of the
+This works but CNAME records increase the amount of queries. Furthermore, some services like **XMPP** can require one set up A records and do not recommend one use CNAMEs. The script presents an alternative
+to this by supporting the update of multiple records at once. However it is assumed that if multiple records are being used, all are part of the same DNS **Zone**, that is they are of the
 following shape:
 
 * record-to-update1.mydomain.org    
 * record-to-update2.mydomain.org    
 * record-to-update3.mydomain.org    
 
-If multiple records are specified and they are **NOT** part of the same DNS **Zone**, the script
-will exit with an error. If it is desired to update records on multiple DNS **Zones**, then it
+If multiple records are specified and they are **NOT** part of the same DNS **Zone**, the script will exit with an error. If it is desired to update records on multiple DNS **Zones**, then it
 is best create a different config file and use **-c** option as specified below.
 
-The script also provides the capability to log the public IP each time it is called. The logs
-are kept around for 28 days and then deleted, this can be useful if for some reason access to
-the raw IP address is needed or the API server cannot be contacted (rare!). The log can also be
-sent via email/notification hook if the user desires.
-
-Luadns.com do mention using ddclient on their documentation (see below link), but since
-the author created a hook script for **dehydrated** for use with **Luadns.com**, it was
-a natural progression to create this DDNS update script.    
+Luadns.com do mention using ddclient on their documentation (see below link), but since the author created a [Hook Script](https://github.com/zoot101/dehydrated-hook-luadns) for **dehydrated**
+for use with **Luadns.com**, it was a natural progression to create this DDNS update script. 
 
 * [https://www.luadns.com/dyndns.html](https://www.luadns.com/dyndns.html)
 
-Note that the script only supports Type A DNS Records (IPv4 Addressing Only), IPv6 (AAAA) is
-not supported.
+Note that the script only supports Type A DNS Records (IPv4 Addressing Only), IPv6 (AAAA) is not supported.
 
 # Usage
 
@@ -97,6 +87,9 @@ Usage: luadns-ddns            [OPTIONS...]
                               whether an IP Change is detected
   -c, --config                Override the default config file. Could be useful to
                               update multiple records
+  -i, --info                  Querys the Luadns REST API Endpoints for the user details,
+                              zones, zone records and exits. Allows testing the login
+                              credentials and inspecting the Zone/Records.
   -h, --help                  Print help
 
 The script can also be called with no options like so:
@@ -106,23 +99,22 @@ The script can also be called with no options like so:
 
 # Installation
 
-Two methods are available for installation - via the debian package or manually.
+Two methods are available for installation - via the Debian package or manually.
 
-A package is provided for Debian and its derivatives. The author has tested this
-on Debian Bullseye (11), Debian Bookworm (12), and Debian Trixie (13), Fedora 42 and
+A package is provided for Debian and its derivatives. The author has tested this on Debian Bullseye (11), Debian Bookworm (12), and Debian Trixie (13), Fedora 42 and
 IPFire (2.29 - Core 195).
 
 ## Package Installation - Debian Based Distros
 
 To install the package (for Debian based distros), download it from the releases
 page [HERE](https://github.com/zoot101/luadns-ddns/releases) and do the following.
+
 Note that it's better to use **apt** rather than **dpkg** so the dependencies will be automatically installed.
 
 ```bash
-sudo apt install ./luadns-ddns_1.3.0-1_amd64.deb
+sudo apt install ./luadns-ddns_2.0.0-1_amd64.deb
 ```
-During the package installation, the user is prompted to select a user other
-than root to run the script if desired.
+During the package installation, the user is prompted to select a user other than root to run the script if desired.
 
 Then proceed to the **Getting Started** section below.
 
@@ -132,8 +124,8 @@ First download the latest source code archive from the releases page [HERE](http
 and extract it, then do the below: 
 
 ```bash
-unzip luadns-ddns-1.3.0.zip      # For the Zip File
-tar xvf luadns-ddns-1.3.0.zip    # For the Tar File
+unzip luadns-ddns-2.0.0.zip      # For the Zip File
+tar xvf luadns-ddns-2.0.0.zip    # For the Tar File
 
 cd luadns-ddns
 
@@ -191,8 +183,8 @@ the author), it is easy to get the script up and running, but the steps are
 a bit different (see below):
 
 ```bash
-unzip luadns-ddns-1.3.0.zip       # For the Zip File
-tar xvf luadns-ddns-1.3.0.tar.gz  # For the Tar File
+unzip luadns-ddns-2.0.0.zip       # For the Zip File
+tar xvf luadns-ddns-2.0.0.tar.gz  # For the Tar File
 
 cd luadns-ddns
 
@@ -249,9 +241,9 @@ The finer details about the above are not considered here and left up to the use
 
 The next thing that is required is to configure the config file for the script.
 
-A description of what is required in the config file is shown here. A sample config
-file can be found here:    
-- https://github.com/zoot101/luadns-ddns/blob/main/config/luadns-ddns.conf
+A description of what is required in the config file is shown here. A sample config file can be found here:    
+
+- [https://github.com/zoot101/luadns-ddns/blob/main/config/luadns-ddns.conf](https://github.com/zoot101/luadns-ddns/blob/main/config/luadns-ddns.conf)
 
 The config file should be specified in one of the following 3 ways:
 
@@ -259,135 +251,144 @@ The config file should be specified in one of the following 3 ways:
 2. /etc/luadns-ddns.conf   
 3. /path/to/script/directory/luadns-ddns.con   
 
-It is read in the above order of preference. If the **-c** option is not used,
-the script will initially try **/etc/luadns-ddns.conf**, and if that doesn't
-exist it will fall back to the same directory as the script. If the config
-file can't be found there, the script will exit with an error. 
-
-Shown below is a simplified sample configuration file. By default the Script
-will place a sample config file at **/etc/luadns-ddns.conf** with explanatory
-comments that can be edited accordingly. 
-
-```bash
-# List of URLS to Check Public IP
-ip_check_urls=( "ifconfig.me" "ifconfig.co" "icanhazip.com" )
-
-# Times to Update Regardless of IP Change
-times_to_update=( "00:00" "04:00" "08:00" "12:00" "16:00" "20:00" )
-
-# Luadns.com Account Credentials
-lua_email=email@example.org
-lua_api_key="1234567890abcedfghi....yzlump"
-
-# DNS Record(s) details
-# Update a Single Record
-record_names="record-to-update.mydomain.org"
-
-# Update Multiple Records (No Limit is enforced by the script)
-#record_names=( "record-to-update1.mydomain.org" "record-to-update2.mydomain.org" )
-
-# Email notifications (To disable emails comment these out)
-email_address=receive.notifications.here@example.org
-muttrc_path="/path/to/muttrc/file"
-
-# Enable IP Logging (Comment out or set to no if not using)
-#ip_logging="yes"
-#notify_with_log="yes"
-
-# Notification Hook (Comment out or set to no if not using)
-#notification_hook="/path/to/notification/hook"
-
-# Hook Variables
-# If any variables are required by the above hook specify them here with "export"
-#export var1="whatever"
-
-```
+It is read in the above order of preference. If the **-c** option is not used, the script will initially try **/etc/luadns-ddns.conf**, and if that doesn't
+exist it will fall back to the same directory as the script. If the config file can't be found there, the script will exit with an error. 
 
 The config file parameters are discussed in more detail below:
 
-### ip\_check\_urls
+# public\_ip\_source
 
-This is an array of URLs that can be queried with **curl** to get
-an output of ones public IPv4 address in plain txt. It can be changed,
-but in the authors experience the values populated in the default config
-file work quite well.
+How does the script obtain the Public IP? As mentioned above, this can be set to three methods:
 
-Must be specified as an array like so:
+1. Local Interface: If the script is ran on a system with a Public IP directly on one of its interfaces for example, a firewall, the script can obtain the IP directly from the interface itself.
+This is the best option to use if the system already has a Public IP.
 
-* ip\_check\_urls=( "url1" "url2" "url3" ) 
+2. HTTP Server: Sends a HTTP or HTTPS request to an internet based server that returns the IP in Plain TXT. Useful if the system that runs the script is behind NAT, or if there are DNS restrictions.
 
-The script will initially try the 1st link specifed to get the Public IP address,
-failing that it will move on to the next one and so on. If all urls either can't
-be contacted or do not reply with a valid IPv4 address, the script will exit
-with an error.
+3. DNS Query: There are certain DNS Servers that host DNS records that can be queried directly to obtain ones Public IP address. This is often much faster than the HTTP/HTTPS option, but requires querying the Nameserver
+for the corresponding Record(s) directly.
 
-### interface\_with\_public\_ip
+Set to either of these 3 options:
 
-If the script is being ran on a system with a public IP address, this is a better
-option to use. In this case the IP address of the interface is checked directly and no
-external servers are contacted. Useful for systems that already have a public IP address
-like internet facing Firewalls.
+* public\_ip\_source="Local Interface"   
+* public\_ip\_source="HTTP Server"   
+* public\_ip\_source="DNS Query"   
 
-Using this setting takes precedence of the ip\_check\_urls above. Comment out if not using.
+Depending on what One sets above, further information is required below.
 
-* interface\_with\_public\_ip="enp1s0"
+* If using the Local Interface method, specify the name of the interface here.
 
-### times\_to\_update
+* If using the HTTP Server Method, comment out the array of HTTP Servers specified here.
 
-A list of times that the script will update the record(s) regardless of
-whether there is a public IP change detected or not. This always ensures
-the record is kept up to date.
+* If using the DNS Query Method, comment out the list of commands below. The commands are used as different Nameserver use different methods for determining the
+Public IP. Some return TXT records, for others its standard A Records. One should use single quotes ' ' to wrap commands in to ensure all characters are correctly passed in.
+In the case of the HTTP Server or DNS Query method the Servers or commands are stepped through one by one until a successful
+result is obtained. The below commands have been tested, but one is free to use their own commands if desired.
 
-It is **NOT** recommended to change this as it needs to match what is defined
-in **/etc/systemd/system/luadns-ddns.timer** to function as expected.
+Examples:
 
-Must be specified as an array with times in the following format (HH:MM)
+```
+public_ip_interface="enp1s0"
 
-* times\_to\_update=( "00:00" "04:00" "10:00" .... "20:00" )
+public_ip_http_servers=(
+ "https://ifconfig.me"
+ "https://ifconfig.co"
+ "https://icanhazip.com"
+ "https://ipecho.net/plain"
+)
 
-### lua\_email
+public_ip_dns_commands=(
+  'dig @resolver1.opendns.com myip.opendns.com A -4 +short'
+  'dig @ns1.google.com o-o.myaddr.l.google.com TXT -4 +short | tr -d \"'
+  'dig @1.1.1.1 whoami.cloudflare TXT CH -4 +short | tr -d \"'
+  'dig @ns1-1.akamaitech.net whoami.akamai.net A -4 +short'
+)
+```
+
+# times\_to\_update
+
+Its useful to have the script update the desired records regardless at certain times throughout the day. This helps ensure the records
+are always updated and reachable.
+
+Recommended to leave unchanged as it should match what is in **/etc/systemd/system/luadns-ddns.timer** 
+If these are changed, then the timer file needs to be changed also.
+
+Example - Must be an array as per bash syntax, with the times specified as ***HH:MM***.
+
+```
+times_to_update=(
+  "00:00"
+  "02:00"
+  "04:00"
+  "06:00"
+  "08:00"
+  "10:00"
+  "12:00"
+  "14:00"
+  "16:00"
+  "18:00"
+  "20:00"
+  "22:00"
+)
+```
+### luadns\_email
 
 This is the logon email for your **Luadns.com** account.
 
-### lua\_api\_key
+### luadns\_api\_key
 
-This is the api key with access to the zone housing the record(s) one wishes
-to use with the script. It can be created via the WebUI after logging into
-**Luadns.com**.
+This is the api key with access to the zone housing the record(s) one wishes to use with the script. It can be created via the WebUI after logging into **Luadns.com**.
 
-### record\_names
+### dns\_zone\_name
 
-This is either a single DNS record or a list of DNS records that one wishes
-to use as the DDNS record(s). Before using the script, each record should be
-created as type A with an IP address defined, which can be anything as the
-script will update it accordingly.
+Specify the Zone Name. If for example the record is "DDNS1.zone1.org", the Zone Name is "zone1.org" in this example. This allows the script
+to be more simple as it does not have to query the Public Suffix List to determine the correct zone name. Note that while the script can
+update several DNS A Records at once, they all must be part of the same DNS Zone. Ex: ddns1.zone1.org, ddns2.zone1.org etc. The script will
+exit in error if this is not the case.
 
-This should be done via the **Luadns.com** WebUI or otherwise.
+* dns\_zone\_name="example.org"
 
-To define a single record use:
+### dns\_record\_names
 
-* **record_name="ddns1.example.org"**
+Specify the DNS Records that will be updated at **Luadns.com**. Keep brackets to define as an array. Add as many as desired, the script does not
+impose a limit.
 
-To define multiple records to update, use an array like so:
+To defined multiple use the following:
 
-* **record_name=( "ddns1.example.org" "ddns2.example.org" ... "ddnsN.example.org" )**
+* record\_names=( "record1.example.org" "record2.example.org" ... )
 
-### interface\_ip
+For a Single Record, use the following:
 
-Use a non-default local network interface.
+* record\_names="record1.example.org"
 
-This should not be needed for most setups. This option can be useful in the event
-one is running the script on a system behind a firewall with multiple local network
-interfaces whereby a different Public IP is reachable from those interfaces.
+Alternatively specify them like so:
 
-An example could be a Dual WAN Setup, a Firewall that uses Policy
-Based Routing for different WAN connections, or if one is using a VPN
+```
+dns_record_names=(
+  "record1.example.org"
+  "record2.example.org"
+   ...
+)
+```
+
+### outgoing\_interface\_ip
+ 
+Use a non-default local network interface for talking to the Luadns API and for querying the records to verify an update has been successful.
+
+This option should not be needed for most default setups. This option can be useful in the event one is running the script on a system behind a firewall
+with multiple local network interfaces whereby a different Public IP is reachable depending on which interface is used.
+
+An example could be a Dual WAN Setup, a Firewall that uses Policy Based Routing for different WAN connections, or if one is using a VPN
 and wishes the record to reflect the Public IP of the VPN instead.
 
-Must be a valid IPv4 address. Comment out if not using and to fall back to
-the default route. Example:
+This could also be useful if one is using a VPN as certain VPN providers do things like Hijack ones DNS requests leading to undesirable results when
+querying the Luadns nameservers directly.
 
-* **interface_ip="192.168.7.4"**
+Must be a valid IPv4 address of a Local Interface. Comment out if not using
+
+Example:
+
+* outgoing\_interface\_ip="192.168.1.4"
 
 ### email\_address
 
@@ -397,28 +398,8 @@ and rely on the notification hook instead, comment this out.
 ### muttrc\_path
 
 This is the path to the **muttrc** file to allow **mutt** to send the notification
-emails. Some samples are provided in the docs directory. If this is left empty,
-no notification emails are sent. See the section below on Email Notifications for
-more detailed instructions on setting this file up.
-- https://github.com/zoot101/luadns-ddns/tree/main/docs/muttrc-examples
-
-### ip\_logging
-
-This can be enabled to keep a daily log of the public IP address stretching back
-28 days. Valid values are \"yes\" or\"no\". Comment out or set to \"no\" to disable.
-
-### notify\_with\_log
-
-Each time the script is called for the 1st time in a day, it will send an email
-to send the user the log of all IP addresses recorded the previous day as an attachment.
-
-The idea behind this is that if the API Server cannot be contacted, one can
-fall back to the IP log sent by email.
-
-Valid values are \"yes\" or \"no\". Comment out or set to no if not using. Has no
-effect if the **ip_logging** setting above is not enabled.
-
-Note that the custom notification hook (if configured) is not used here.
+emails. Some samples are provided in the docs directory - see below. If this is left empty,
+no notification emails are sent.
 
 ### notification\_hook
 
@@ -431,39 +412,34 @@ accepts the below arguments. Must be executable.
 
 The notification hook is called like so:
 
-* **$ /path/to/notification/hook "Email Subject" "Email Body"**
+* **$ /path/to/notification/hook "Subject" "/path/to/body-file"**
 
-In the case that the logging function is enabled and the **notify_with_log**
-setting is being used, the notification hook is called like so:
-
-* **$ /path/to/notification/hook "Email Subject" Email Body" "Email Attachment"**
-
-Comment out if not using.
+The body file above is a path to a TXT file containing the text that would form the body of the notification. The
+notification hook is primarily intended for services like **ntfy**, **Signal**, **Telegram** or **XMPP** that is
+more suited a short message than the full Text of the mail. As a result, the script will pass a more concise
+body of text to the notification hook.
 
 If any variables are required for the notification hook, they can be specifed in the
 config file with the use of export. Example:
 
-```bash
-export ntfy_url="https://ntfy.sh/channel_name"
-```
+* **export ntfy_url="https://ntfy.sh/channel_name"**
 
 Note not to forget the "export".
 
+A sample notification hook for use with **https://ntfy.sh** is provided here:
+
+* [https://github.com/zoot101/luadns-ddns/blob/main/docs/examples/ntfy-hook.sh](https://github.com/zoot101/luadns-ddns/blob/main/docs/examples/ntfy-hook.sh)
+
 As before, a sample config file can be found here:    
+
 - [https://github.com/zoot101/luadns-ddns/blob/main/config/luadns-ddns.conf](https://github.com/zoot101/luadns-ddns/blob/main/config/luadns-ddns.conf)
-
-### notification\_hook\_compact\_log
-
-By default the email report is quite detailed. This is too much information to services like ntfy, Telegram etc. Those are
-more suited to small messages. Enable this option to pass a smaller body of text to the notification hook.
-
-Comment out if not using. Should be set to "yes" or "no". Off by default.
 
 # Step 3 - Setting Up Email Notifications
 
 A valid muttrc configuration is required to send email notifications.
 
 A number of sample configurations can be found here:   
+
 - [https://github.com/zoot101/luadns-ddns/tree/main/docs/muttrc-examples](https://github.com/zoot101/luadns-ddns/tree/main/docs/muttrc-examples)
 
 The following sample configurations are provided:
@@ -476,18 +452,17 @@ See the above for much more detailed instructions on setting it up.
 
 ## Email Notifications on IPFire
 
-As mentioned above, sending emails is not possible on IPFire using **mutt** as it
-is not provided in the IPFire repos. However one can use the following hook script
+As mentioned above, sending emails is not possible on IPFire using **mutt** as it is not provided in the IPFire repos. However one can use the following hook script
 created by the author to send emails.
 
 - [https://github.com/zoot101/luadns-ddns/blob/main/docs/examples/send-email-ipfire.sh](https://github.com/zoot101/luadns-ddns/blob/main/docs/examples/send-email-ipfire.sh)
 
-First set up a valid email configuration using the Firewall's WebUI. See the official
-documentation here:
+First set up a valid email configuration using the Firewall's WebUI. See the official documentation here:
 
 - [https://www.ipfire.org/docs/configuration/system/mail\_service](https://www.ipfire.org/docs/configuration/system/mail_service)
 
 To use it, do the following:
+
 ```bash
 mkdir /opt/ipfire-hooks
 cd /opt/ipfire-hooks
@@ -555,58 +530,58 @@ A sample output for the case for an IP change is shown below.
 
 ```bash
 ##############################
-# Luadns.com DDNS Version: 1.3.0
+# Luadns.com DDNS Version: 2.0.0
 ##############################
-Initialized at 10:41:15 on 21/04/2026
+Initialized at 09:40:16 on 21/09/2026
  * Luadns.com API URL: https://api.luadns.com/v1
- * Hostname: server.home.lan
+ * Hostname: firewall.example.org
  * Host OS: Debian GNU/Linux 13 (trixie)
 Input Options:
- * IP Check URL(s): 4
-    - ifconfig.me
-    - ifconfig.co
-    - icanhazip.com
-    - ipecho.net/plain
- * Record Name 1/1: ddns-record.example.org
- * Zone Name: example.org
- * Logging Enabled: YES
- * Force Update: NO
+ * Public IP Source: Local Interface: pppoe-wan
+ * DNS Zone Name: example.org
+ * DNS Records to Update:
+   - media.example.org
+   - xmpp.example.org
  * Email Notifications: YES
  * Notification Hook: YES
- * Notification Hook Log: Compact
 Runlog is below:
 
-Checking Zone is valid and hosted at Luadns.com
- * Success: Got Valid NS records for example.org from ns1.luadns.net
-Checking Public IP using the supplied urls...
- * Public IP determined to be 1.2.3.4 using ifconfig.me
- * Logging Public IP 1.2.3.4
-Checking for Public IP Change
- * Old Public IP : 1.2.3.3
- * New Public IP : 1.2.3.4
- * IP Change Detected - Proceeding to Update
+Update the DNS Record(s) Regardless?
+ * No
 
-Updating 1 Record(s) [IP Change Detected]
- * Last IP: 1.2.3.3
- * New IP: 1.2.3.4
- * Contacting Luadns.com REST API: https://api.luadns.com/v1
- * Getting Zone ID for example.org
- * Found Zone ID: 1234
- * Updating Record 1/1
-  -> Getting Record ID for ddns-record.example.org
-  -> Found Record ID: 123456789
-  -> Updating ddns-record.example.org
-  -> API Server Reply: Updated Successfully to 1.2.3.4
- * New IP: 1.2.3.4 recorded for next run
+Checking Public IP...
+ * Checking IP on Interface: pppoe-wan
+ * Got Public IP: 1.2.3.4
+ * IP Change Detected!
+    - Last IP: 1.2.3.2
+    - New IP: 1.2.3.4
+ * Proceeding to Update Record(s)...
 
-Public IP Change Detected
- * Record Name 1/1: ddns-record.example.org
- * Last IP: 1.2.3.3
- * New IP: 1.2.3.4
- * Above records updated via https://api.luadns.com/v1
+Updating DNS Record(s)...
+ * Got Valid NS records for example.org from ns1.luadns.net
+ * Got Valid Zone ID for example.org from LuaDNS API
+ * Updating Record 1/2: media.example.org...
+    - Got Valid Record ID
+    - Record updated to 1.2.3.4
+ * Updating Record 2/2: xmpp.example.org...
+    - Got Valid Record ID
+    - Record updated to 1.2.3.4
+
+Verifying Updated DNS Record(s)...
+ * Querying LuaDNS Nameservers for media.example.org...
+    - Record live on ns1.luadns.net
+    - Record live on ns2.luadns.net
+    - Record live on ns3.luadns.net
+    - Record live on ns4.luadns.net
+ * Querying LuaDNS Nameservers for xmpp.example.org...
+    - Record live on ns1.luadns.net
+    - Record live on ns2.luadns.net
+    - Record live on ns3.luadns.net
+    - Record live on ns4.luadns.net
+ * Success! All Updated Record(s) now Live!
 
 Regards,
-server.home.lan
+firewall.example.org
 ```
 
 Once the script is confirmed working, one can move on to systemd setup below.
@@ -669,7 +644,7 @@ wrong.
 
 To get the script running via cron on IPFire, see the below page:
 
-[https://github.com/zoot101/luadns-ddns/edit/main/docs/cron-examples](https://github.com/zoot101/luadns-ddns/edit/main/docs/cron-examples)
+[https://github.com/zoot101/luadns-ddns/tree/main/docs/cron-examples](https://github.com/zoot101/luadns-ddns/tree/main/docs/cron-examples)
 
 # Further Examples
 
