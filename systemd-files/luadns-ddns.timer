@@ -2,10 +2,10 @@
 # corresponds to the update times specifed in the script
 
 [Unit]
-Description=Checks for a new Public IP every 10 minutes, and updates a record at Luadns.com if one is found.
+Description=Checks for a new Public IP every 5 minutes, and updates a record at Luadns.com if one is found.
 
 [Timer]
-OnCalendar=*-*-* *:00,10,20,30,40,50:00
+OnCalendar=*-*-* *:00,05,10,15,20,25,30,35,40,45,50,55:00
 Persistent=false
 
 [Install]
