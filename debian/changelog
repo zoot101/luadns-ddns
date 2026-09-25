@@ -1,3 +1,68 @@
+luadns-ddns (2.0.0-1) stable; urgency=medium
+
+  * Large Update - Many sections of the script have been re-written.
+
+  * Note that the configuration file has changed quite a bit,
+    users will have to update the config file accordingly. It is
+    not possible to use the config file that was used with older
+    versions of the script (<=1.3.0).
+
+  * Three Methods to get the Public IP are now possible:
+    - 1: Looking at a Local Network Interface directly, useful for
+      systems that already have Public IPs like Firewalls or
+      internet facing servers.
+    - 2: Using HTTP Servers that return the IP in Plain TXT. Useful
+      for systems behind NAT. This is the method that was used
+      in older versions of the script.
+    - 3: Using DNS Records that return the Public IP. Useful for
+      systems behind NAT. Much faster than the HTTP Servers, but
+      require special dig commands as some require querying an
+      A record, others require querying a TXT record.
+
+  * Added a -i,--info argument that prints the information
+    from the following endpoints from the Luadns.com REST API,
+    and exits. Useful for debug of the credentials and the
+    dns records.
+    - https://api.luadns.com/v1/users/me 
+    - https://api.luadns.com/v1/zones
+    - https://api.luadns.com/v1/zones/{ZONE-ID}
+
+  * Removed the IP Logging Function as it was not very useful in
+    the authors experience.
+
+  * The body of Text passed to the Notification Hook is now a
+    small compact body of Text suited to services like ntfy,
+    XMPP, Telegram, Signal etc. by default. The ability to
+    pass the full email body into the notification hook has been
+    removed as it was not very useful.
+
+  * Added functionality to verify the records are updated after
+    the update is finished via the Luadns API. The script will
+    now query the Luadns Nameservers until they return the
+    expected records.
+
+  * The script now also records the update status in a file
+    that persists between runs of the script. This way if the
+    script ended in error, updating the records is automatically
+    tried at the next time the script is ran.
+
+  * Made calls to the Luadns API more robust. Added json error
+    check to all responses using jq. This should make talking to
+    the REST API more robust.
+
+  * Changed default Systemd Timer Unit File to run every 5 minutes
+    instead of every 10. Note that the API server is only contacted
+    if a change in the IP is detected.
+
+  * Added Documentation to Systemd Service Unit file along with
+    a dependence on network-online.target.
+
+  * Updated dependency check to check for all essential commands.
+
+  * Updated Manual Entry and README documentation.
+
+ -- Mark <mark9000@fastmail.org>  Fri, 25 Sep 2026 23:40:14 +0100
+
 luadns-ddns (1.3.0-1) stable; urgency=medium
 
   * Added an option to the configuration file to get the script
